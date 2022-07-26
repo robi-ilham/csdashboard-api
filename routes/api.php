@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\JnsWebUserController;
 use App\Http\Controllers\PctController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,10 +20,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
+
 Route::group(['middleware'=>'auth:sanctum'],function(){
     Route::post('/logout',[AuthController::class,'logout']);
     Route::get('/client',[PctController::class,'clientList']);
     
+    Route::prefix('/jns')->group(function () {
+        Route::prefix('/user')->group(function () {
+            Route::get('',[JnsWebUserController::class,'index']);
+        });
+        Route::resource('division', 'JnsBroadcastDivisionController');
+    });
 
     Route::prefix('/pct')->group(function () {
         Route::get('/client',[PctController::class,'clientList']);
