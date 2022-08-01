@@ -13,10 +13,10 @@ class JnsWebUserController extends Controller
         return response()->json($users,200);
     }
 
-    public function create(Request $request){
+    public function store(Request $request){
         $request->validate([
             'username'=>'required|string',
-            'password'=>'required',
+            'password'=>'required|confirmed|min:8',
             'name'=>'required',
             'email'=>'required',
         ]);

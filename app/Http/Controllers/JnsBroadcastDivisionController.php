@@ -14,7 +14,7 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function index()
     {
-        $divisions = JnsBroadcastDivision::paginate();
+        $divisions = JnsBroadcastDivision::paginate(20);
 
         return response()->json($divisions);
     }

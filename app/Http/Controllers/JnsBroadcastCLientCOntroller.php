@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JnsBroadcastClient;
 use Illuminate\Http\Request;
 
-class JnsBroadcastCLientCOntroller extends Controller
+class JnsBroadcastCLientController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +14,7 @@ class JnsBroadcastCLientCOntroller extends Controller
      */
     public function index()
     {
-        $clients = JnsBroadcastClient::paginate();
+        $clients = JnsBroadcastClient::paginate(20);
         return response()->json($clients,200);
     }
 
