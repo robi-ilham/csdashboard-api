@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class JnsWebUser extends Model
+class JnsBlackList extends Model
 {
     use HasFactory;
-    protected $connection = 'jnsweb';
-    protected $table = 'users';
+    protected $connection = 'jnsbroadcast';
+    protected $table = 'blacklist_numbers';
 
     const CREATED_AT = 'created';
     const UPDATED_AT = 'modified';

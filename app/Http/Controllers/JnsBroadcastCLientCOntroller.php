@@ -18,6 +18,12 @@ class JnsBroadcastCLientController extends Controller
         return response()->json($clients,200);
     }
 
+    public function indexAll()
+    {
+        $clients = JnsBroadcastClient::all();
+        return response()->json($clients,200);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

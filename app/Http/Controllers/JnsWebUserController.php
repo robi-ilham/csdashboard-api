@@ -18,13 +18,12 @@ class JnsWebUserController extends Controller
             'username'=>'required|string',
             'password'=>'required|confirmed|min:8',
             'name'=>'required',
-            'email'=>'required',
         ]);
 
         $user = JnsWebUser::create([
             'name'=>$request->name,
             'username'=>$request->username,
-            'password'=>$request->password,
+            'password'=>sha1($request->password),
             'email'=>$request->email,
             'status'=>1,
             'expiry_mode_id'=>1,
@@ -36,26 +35,19 @@ class JnsWebUserController extends Controller
 
         return response()->json($user);
     }
-    public function detail(Request $request){
-
-        $request->validate([
-            'id'=>'required|integer'
-        ]);
-
-        $user = JnsWebUser::find($request->id);
-
-        return response()->json($user);
+    public function show($id)
+    {
+        $division=JnsWebUser::find($id);
+        return response()->json($division,200);
     }
 
-    public function update(Request $request){
+    public function update(Request $request,$id){
         $request->validate([
             'username'=>'required|string',
-            'password'=>'required',
             'name'=>'required',
-            'email'=>'required',
         ]);
 
-        $user = JnsWebUser::where('id',$request->id)->update([
+        $user = JnsWebUser::findOrFail($id)->update([
             'name'=>$request->name,
             'username'=>$request->username,
             'password'=>$request->password,
@@ -71,8 +63,8 @@ class JnsWebUserController extends Controller
         return response()->json($user);
     }
 
-    public function delete(Request $request){
-        $user = JnsWebUser::find($request->id);
+    public function destroy($user){
+        $user = JnsWebUser::findOrFail($user);
         $user->delete();
         return response()->json(['message'=>'data successfully deleted',200]);
     }

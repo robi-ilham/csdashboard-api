@@ -2,25 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JnsBroadcastClient;
 use App\Models\JnsBroadcastDivision;
+use App\Models\M2mUser;
 use Illuminate\Http\Request;
 
-class JnsBroadcastDivisionController extends Controller
+class M2mUserController extends Controller
 {
-    /**
+   /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $divisions = JnsBroadcastDivision::paginate(20);
+        $divisions = M2mUser::paginate(20);
 
         return response()->json($divisions);
     }
     public function indexAll()
     {
-        $divisions = JnsBroadcastDivision::all();
+        $divisions = M2mUser::all();
 
         return response()->json($divisions);
     }
@@ -43,15 +45,25 @@ class JnsBroadcastDivisionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'=>'required'
+            'username'=>'required'
+        ]);
+        $client = JnsBroadcastClient::find($request->client_id);
+        $division = JnsBroadcastDivision::find($request->division_id);
+        $data = M2mUser::create([
+            'client_name'=>$client->name,
+            'client_id'=>$request->client_id,
+            'division_id'=>$request->division_id,
+            'division_name'=>$division->name,
+            'access_mod'=>$this->getAccessMode($request->access_mode),
+            'api_key'=>$request->api_key,
+            'username'=>$request->username,
+            'password'=>$request->password,
+            'expiry'=>300,
+            'unbillable_access'=>0
+
         ]);
 
-        $division = JnsBroadcastDivision::create([
-            'name'=>$request->name,
-            'client_id'=>$request->client_id
-        ]);
-
-        return response()->json($division,200);
+        return response()->json($data,200);
     }
 
     /**
@@ -62,7 +74,7 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function show($id)
     {
-        $division=JnsBroadcastDivision::find($id);
+        $division=M2mUser::find($id);
         return response()->json($division,200);
     }
 
@@ -87,12 +99,22 @@ class JnsBroadcastDivisionController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name'=>'required'
+            'username'=>'required'
         ]);
+        dd($request);
+        $division = M2mUser::findOrFail($id)->update([
+            'client_name'=>$request->client_name,
+            'client_id'=>$request->client_id,
+            'division_id'=>$request->division_id,
+            'division_name'=>$request->division_name,
+            'access_mode'=>$this->getAccessMode($request->access_mode),
+            'api_key'=>$request->api_key,
+            'username'=>$request->username,
+            'password'=>$request->password,
+            'expiry'=>300,
+            'unbillable_access'=>0
 
-        $division = JnsBroadcastDivision::find($id)->update([
-            'name'=>$request->name,
-            'client_id'=>$request->client_id
+
         ]);
 
         return response()->json($division,200);
@@ -106,8 +128,15 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function destroy($id)
     {
-        $division=JnsBroadcastDivision::find($id);
+        $division=M2mUser::find($id);
         $division->delete();
         return response()->json(['message'=>'deleted'],200);
+    }
+    private function getAccessMode($types){
+        $total=0;
+        foreach ($types as $val){
+            $total=$total+$val;
+        }
+        return $total;
     }
 }

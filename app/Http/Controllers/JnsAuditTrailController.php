@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsBroadcastDivision;
+use App\Models\JnsAuditTrail;
 use Illuminate\Http\Request;
 
-class JnsBroadcastDivisionController extends Controller
+class JnsAuditTrailController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,16 +14,11 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function index()
     {
-        $divisions = JnsBroadcastDivision::paginate(20);
+        $data = JnsAuditTrail::paginate(20);
 
-        return response()->json($divisions);
+        return response()->json($data,200);
     }
-    public function indexAll()
-    {
-        $divisions = JnsBroadcastDivision::all();
 
-        return response()->json($divisions);
-    }
     /**
      * Show the form for creating a new resource.
      *
@@ -42,16 +37,7 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name'=>'required'
-        ]);
-
-        $division = JnsBroadcastDivision::create([
-            'name'=>$request->name,
-            'client_id'=>$request->client_id
-        ]);
-
-        return response()->json($division,200);
+        //
     }
 
     /**
@@ -62,8 +48,7 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function show($id)
     {
-        $division=JnsBroadcastDivision::find($id);
-        return response()->json($division,200);
+        //
     }
 
     /**
@@ -86,16 +71,7 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name'=>'required'
-        ]);
-
-        $division = JnsBroadcastDivision::find($id)->update([
-            'name'=>$request->name,
-            'client_id'=>$request->client_id
-        ]);
-
-        return response()->json($division,200);
+        //
     }
 
     /**
@@ -106,8 +82,6 @@ class JnsBroadcastDivisionController extends Controller
      */
     public function destroy($id)
     {
-        $division=JnsBroadcastDivision::find($id);
-        $division->delete();
-        return response()->json(['message'=>'deleted'],200);
+        //
     }
 }
