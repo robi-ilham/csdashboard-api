@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsBroadcastClient;
+use App\Models\JnsTokenBalance;
 use Illuminate\Http\Request;
 
-class JnsBroadcastCLientController extends Controller
+class JnsTokenBalanceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,14 +14,9 @@ class JnsBroadcastCLientController extends Controller
      */
     public function index()
     {
-        $clients = JnsBroadcastClient::paginate(20);
-        return response()->json($clients,200);
-    }
+        $data = JnsTokenBalance::paginate(20);
 
-    public function indexAll()
-    {
-        $clients = JnsBroadcastClient::all();
-        return response()->json($clients,200);
+        return response()->json($data);
     }
 
     /**
@@ -42,19 +37,7 @@ class JnsBroadcastCLientController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'code'=>'required',
-            'name'=>'required'
-        ]);
-
-        $client=JnsBroadcastClient::create([
-            'code'=>$request->code,
-            'name'=>$request->name,
-            'active'=>1,
-            'api_key'=>$request->api_key
-        ]);
-
-        return response()->json($client,200);
+        //
     }
 
     /**
@@ -65,9 +48,7 @@ class JnsBroadcastCLientController extends Controller
      */
     public function show($id)
     {
-        $client=JnsBroadcastClient::find($id);
-
-        return response()->json($client,200);
+        //
     }
 
     /**
@@ -90,19 +71,7 @@ class JnsBroadcastCLientController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'code'=>'required',
-            'name'=>'required'
-        ]);
-
-        $client=JnsBroadcastClient::find($id)->create([
-            'code'=>$request->code,
-            'name'=>$request->name,
-            'active'=>1,
-            'api_key'=>'what is this?'
-        ]);
-
-        return response()->json($client,200);
+        //
     }
 
     /**
@@ -113,8 +82,6 @@ class JnsBroadcastCLientController extends Controller
      */
     public function destroy($id)
     {
-        $client=JnsBroadcastClient::findOrFail($id);
-        $client->delete();
-        return response()->json(['message'=>'deleted'],200);
+        //
     }
 }

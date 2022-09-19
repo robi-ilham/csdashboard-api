@@ -74,7 +74,8 @@ class UserContrroller extends Controller
      */
     public function show(User $user)
     {
-        //
+        $user = User::find($user);
+        return response()->json($user,200);
     }
 
     /**
@@ -95,9 +96,39 @@ class UserContrroller extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request,  $user)
     {
-        //
+        $request->validate([
+            'name'=>'required|min:4',
+            'email'=>'required|email'
+        ]);
+
+
+        $user=User::findOrFail($user)->update([
+            'name'=>$request->name,
+            'email'=>$request->email
+        ]);
+
+        $response=[
+                'user'=>$user
+        ];
+        
+        return response()->json($response);
+    }
+
+    public function resetPassword(Request $request){
+        $request->validate([
+            'password'=>[
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->letters()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(),
+            ],
+        ]);
     }
 
     /**
@@ -106,8 +137,9 @@ class UserContrroller extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy( $user)
     {
-        //
+        $user=User::findOrFail($user)->delete();
+        return response()->json(['message'=>'deleted'],200);
     }
 }

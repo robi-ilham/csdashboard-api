@@ -2,26 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsBroadcastClient;
 use Illuminate\Http\Request;
+use App\Service\CproService;
+use Illuminate\Support\Facades\Http;
 
-class JnsBroadcastCLientController extends Controller
+class CproSender extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = JnsBroadcastClient::paginate(20);
-        return response()->json($clients,200);
-    }
+        $token = CproService::getToken();
 
-    public function indexAll()
-    {
-        $clients = JnsBroadcastClient::all();
-        return response()->json($clients,200);
+        if(!$token){
+            $response=[
+                'status'=>0,
+                'message'=>'login cpro failed'
+            ];
+            return  response()->json($response,401);
+        }
+        $url = $url=env('CPRO_HOST').'/api/config-sender-combo';
+        $headers = ['Authorization'=>$token];
+        $body = '{
+            "data": {
+                "client-id": 550
+            }
+        }';
+        $response = Http::withHeaders($headers)->withBody($body,'application/json')->post($url)->json();
+        return response()->json($response);
     }
 
     /**
@@ -42,19 +53,7 @@ class JnsBroadcastCLientController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'code'=>'required',
-            'name'=>'required'
-        ]);
-
-        $client=JnsBroadcastClient::create([
-            'code'=>$request->code,
-            'name'=>$request->name,
-            'active'=>1,
-            'api_key'=>$request->api_key
-        ]);
-
-        return response()->json($client,200);
+        //
     }
 
     /**
@@ -65,9 +64,7 @@ class JnsBroadcastCLientController extends Controller
      */
     public function show($id)
     {
-        $client=JnsBroadcastClient::find($id);
-
-        return response()->json($client,200);
+        //
     }
 
     /**
@@ -90,19 +87,7 @@ class JnsBroadcastCLientController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'code'=>'required',
-            'name'=>'required'
-        ]);
-
-        $client=JnsBroadcastClient::find($id)->create([
-            'code'=>$request->code,
-            'name'=>$request->name,
-            'active'=>1,
-            'api_key'=>'what is this?'
-        ]);
-
-        return response()->json($client,200);
+        //
     }
 
     /**
@@ -113,8 +98,6 @@ class JnsBroadcastCLientController extends Controller
      */
     public function destroy($id)
     {
-        $client=JnsBroadcastClient::findOrFail($id);
-        $client->delete();
-        return response()->json(['message'=>'deleted'],200);
+        //
     }
 }

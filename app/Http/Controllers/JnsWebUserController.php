@@ -7,9 +7,31 @@ use Illuminate\Http\Request;
 
 class JnsWebUserController extends Controller
 {
-    public function index(){
+    public function index(Request $request){
         $users= JnsWebUser::paginate();
-
+        $search=[];
+        if(empty($request)){
+            $users= JnsWebUser::paginate();
+        }else{
+            if(!empty($request->username)){
+                $filter = ['username','like','%'.$request->username.'%'];
+                array_push($search,$filter);
+            }
+            if(!empty($request->group_id)){
+                $filter = ['group_id','=',$request->username];
+                array_push($search,$filter);
+            }
+            if(!empty($request->client_id)){
+                $filter = ['group_id','=',$request->client_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->division_id)){
+                $filter = ['group_id','=',$request->division_id];
+                array_push($search,$filter);
+            }
+            //return $search;
+            $users = JnsWebUser::where($search)->paginate();
+        }
         return response()->json($users,200);
     }
 
@@ -26,7 +48,8 @@ class JnsWebUserController extends Controller
             'password'=>sha1($request->password),
             'email'=>$request->email,
             'status'=>1,
-            'expiry_mode_id'=>1,
+            'expiry_mode_id'=>$request->expiry_mode_id,
+            'expiry'=>$request->expiry,
             'group_id'=>$request->group_id,
             'client_id'=>$request->client_id,
             'division_id'=>$request->division_id,
@@ -53,7 +76,8 @@ class JnsWebUserController extends Controller
             'password'=>$request->password,
             'email'=>$request->email,
             'status'=>1,
-            'expiry_mode_id'=>1,
+            'expiry_mode_id'=>$request->expiry_mode_id,
+            'expiry'=>$request->expiry,
             'group_id'=>$request->group_id,
             'client_id'=>$request->client_id,
             'division_id'=>$request->division_id,
@@ -67,5 +91,17 @@ class JnsWebUserController extends Controller
         $user = JnsWebUser::findOrFail($user);
         $user->delete();
         return response()->json(['message'=>'data successfully deleted',200]);
+    }
+    public function resetPassword($request,$id){
+        $request->validate([
+            'password'=>'required|confirmed|min:8',
+        ]);
+        $user = JnsWebUser::findOrFail($id)->update([
+           
+            'password'=>sha1($request->password),
+           
+        ]);
+
+        return response()->json($user);
     }
 }

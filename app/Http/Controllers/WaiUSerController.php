@@ -2,30 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsBroadcastClient;
-use App\Models\JnsBroadcastDivision;
-use App\Models\M2mUser;
+use App\Models\WaiUser;
 use Illuminate\Http\Request;
 
-class M2mUserController extends Controller
+class WaiUSerController extends Controller
 {
-   /**
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $divisions = M2mUser::paginate(20);
+        $data = WaiUser::paginate(20);
 
-        return response()->json($divisions);
+        return response()->json($data);
     }
-    public function indexAll()
-    {
-        $divisions = M2mUser::all();
 
-        return response()->json($divisions);
-    }
     /**
      * Show the form for creating a new resource.
      *
@@ -33,7 +26,7 @@ class M2mUserController extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**
@@ -45,21 +38,21 @@ class M2mUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'username'=>'required'
+            'name'=>'required',
+            'username'=>'required',
+            'password'=>'required'
         ]);
-        $client = JnsBroadcastClient::find($request->client_id);
-        $division = JnsBroadcastDivision::find($request->division_id);
-        $data = M2mUser::create([
-            'client_name'=>$client->name,
-            'client_id'=>$request->client_id,
-            'division_id'=>$request->division_id,
-            'division_name'=>$division->name,
-            'access_mod'=>!empty($request->access_mode)?$this->getAccessMode($request->access_mode):0,
-            'api_key'=>$request->api_key,
+        $data = WaiUser::create([
+            'name'=>$request->name,
             'username'=>$request->username,
-            'password'=>$request->password,
-            'expiry'=>300,
-            'unbillable_access'=>0
+            'client_id'=>$request->client_id,
+            'password'=>sha1($request->password),
+            'division_id'=>$request->division_id,
+            'group_id'=>$request->group_id,
+            'status'=>'new',
+            'counter'=>0,
+            'sender_id'=>$request->sender_id
+
 
         ]);
 
@@ -74,8 +67,8 @@ class M2mUserController extends Controller
      */
     public function show($id)
     {
-        $division=M2mUser::find($id);
-        return response()->json($division,200);
+        $data=WaiUser::find($id);
+        return response()->json($data,200);
     }
 
     /**
@@ -99,24 +92,22 @@ class M2mUserController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'name'=>'required',
             'username'=>'required'
         ]);
-        //dd($request);
-        $division = M2mUser::findOrFail($id)->update([
-            'client_name'=>$request->client_name,
+        $data = WaiUser::findOrFail($id)->update([
+            'name'=>$request->name,
+            'username'=>$request->username,
             'client_id'=>$request->client_id,
             'division_id'=>$request->division_id,
-            'division_name'=>$request->division_name,
-            'access_mod'=>!empty($request->access_mode)?$this->getAccessMode($request->access_mode):0,
-            'api_key'=>$request->api_key,
-            'username'=>$request->username,
-            'password'=>$request->password,
-            'expiry'=>300,
-            'unbillable_access'=>0
-
+            'group_id'=>$request->group_id,
+            'status'=>'new',
+            'counter'=>0,
+            'sender_id'=>$request->sender_id
 
         ]);
-        return response()->json($division,200);
+
+        return response()->json($data,200);
     }
 
     /**
@@ -127,15 +118,8 @@ class M2mUserController extends Controller
      */
     public function destroy($id)
     {
-        $division=M2mUser::find($id);
-        $division->delete();
+        $data=WaiUser::find($id);
+        $data->delete();
         return response()->json(['message'=>'deleted'],200);
-    }
-    private function getAccessMode($types){
-        $total=0;
-        foreach ($types as $val){
-            $total=$total+$val;
-        }
-        return $total;
     }
 }

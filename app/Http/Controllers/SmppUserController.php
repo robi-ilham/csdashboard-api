@@ -68,7 +68,7 @@ class SmppUserController extends Controller
      */
     public function show($id)
     {
-        $data=SmppUser::find($id);
+        $data=SmppUser::where('client_id',$id)->first();
         return response()->json($data,200);
     }
 
@@ -92,22 +92,21 @@ class SmppUserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = SmppUser::findOrFail($id)->update([
-            'system_id'=>$request->system_id,
-            'client_id'=>$request->client_id,
+        $data = SmppUser::where('client_id',$id)->update([
+            
             'password'=>$request->password,
             'division'=>$request->division,
-            'upload_type'=>$request->upload_type,
+            'upload_by'=>$request->upload_by,
             'service_type'=>$request->service_type,
-            'bacthname'=>$request->bacthname,
-            'use_optional_parameter'=>$request->use_optional_parameter,
-            'use_expired_session'=>$request->use_expired_session,
+            'batchname'=>$request->batchname,
+            'use_optional_parameter'=>($request->use_optional_parameter==1)?true:false,
+            'use_expired_session'=>($request->use_expired_session==1)?true:false,
             'max_connection'=>$request->max_connection,
             'dr_format'=>$request->dr_format
 
 
         ]);
-
+        
         return response()->json($data,200);
     }
 
