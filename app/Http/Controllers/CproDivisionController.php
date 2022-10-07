@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CproDivision;
 use App\Service\CproService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -15,31 +16,16 @@ class CproDivisionController extends Controller
      */
     public function index()
     {
-        $token = CproService::getToken();
+        $divisions = CproDivision::paginate(20);
 
-        if(!$token){
-            $response=[
-                'status'=>0,
-                'message'=>'login cpro failed'
-            ];
-            return  response()->json($response,401);
-        }
-        $url = $url=env('CPRO_HOST').'/api/user-division-list';
-        $headers = ['Authorization'=>$token];
-        $body = '{
-            "query": {
-                "search": "",
-                "page": 1,
-                "page-size": 1000,
-                "order-by": 1,
-                "order": "ASC",
-                "client-id": 550
-            }
-        }';
-        $response = Http::withHeaders($headers)->withBody($body,'application/json')->post($url)->json();
-        return response()->json($response);
+        return response()->json($divisions);
     }
+    public function indexAll()
+    {
+        $divisions = CproDivision::all();
 
+        return response()->json($divisions);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -58,7 +44,16 @@ class CproDivisionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name'=>'required'
+        ]);
+
+        $division = CproDivision::create([
+            'name'=>$request->name,
+            'client_id'=>$request->client_id
+        ]);
+
+        return response()->json($division,200);
     }
 
     /**
@@ -69,7 +64,8 @@ class CproDivisionController extends Controller
      */
     public function show($id)
     {
-        //
+        $division=CproDivision::find($id);
+        return response()->json($division,200);
     }
 
     /**
@@ -92,7 +88,16 @@ class CproDivisionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name'=>'required'
+        ]);
+
+        $division = CproDivision::find($id)->update([
+            'name'=>$request->name,
+            'client_id'=>$request->client_id
+        ]);
+
+        return response()->json($division,200);
     }
 
     /**
@@ -103,19 +108,8 @@ class CproDivisionController extends Controller
      */
     public function destroy($id)
     {
-        $token = CproService::getToken();
-
-        if(!$token){
-            $response=[
-                'status'=>0,
-                'message'=>'login cpro failed'
-            ];
-            return  response()->json($response,401);
-        }
-        $url = $url=env('CPRO_HOST').'/api/user-delete-account';
-        $headers = ['Authorization'=>$token];
-        $data=['username'=>$id];
-        $response = Http::asForm()->withHeaders($headers)->post($url,$data)->json();
-        return response()->json($response);
+        $division=CproDivision::find($id);
+        $division->delete();
+        return response()->json(['message'=>'deleted'],200);
     }
 }

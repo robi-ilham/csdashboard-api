@@ -101,7 +101,25 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-
+        'cpro' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_CPRO', '127.0.0.1'),
+            'port' => env('DB_PORT_CPRO', '3306'),
+            'database' => env('DB_DATABASE_CPRO', 'forge'),
+            'username' => env('DB_USERNAME_CPRO', 'forge'),
+            'password' => env('DB_PASSWORD_CPRO', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
         'jnstoken' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
