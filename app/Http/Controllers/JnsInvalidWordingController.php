@@ -18,6 +18,25 @@ class JnsInvalidWordingController extends Controller
 
         return response()->json($data,200);
     }
+    public function indexAjax(Request $request)
+    {
+    
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $word= JnsInvalidWording::get();
+        }else{
+            if(!empty($request->invalid_regex)){
+                $filter = ['invalid_regex','like','%'.$request->invalid_regex.'%'];
+                array_push($search,$filter);
+            }
+         
+          //  return $search;
+            $word = JnsInvalidWording::where($search)->get();
+        }
+        return response()->json($word,200);
+        
+    }
 
     /**
      * Show the form for creating a new resource.

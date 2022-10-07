@@ -17,4 +17,12 @@ class JnsWaTemplate extends Model
     
 
     protected $guarded=[];
+    protected $with=['client','mask'];
+
+    public function  client(){
+        return $this->hasOne(JnsBroadcastClient::class,'id','client_id');
+    }
+    public function  mask(){
+        return $this->hasOne(BroadcastMasks::class,'id','mask_id');
+    }
 }

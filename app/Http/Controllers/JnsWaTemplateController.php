@@ -18,7 +18,28 @@ class JnsWaTemplateController extends Controller
 
         return response()->json($data);
     }
-
+    public function indexAjax(Request $request)
+    {
+    
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $word= JnsWaTemplate::get();
+        }else{
+            if(!empty($request->msisdn)){
+                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
+                array_push($search,$filter);
+            }
+            if(!empty($request->client_id)){
+                $filter = ['client_id','=',$request->client_id];
+                array_push($search,$filter);
+            }
+          //  return $search;
+            $word = JnsWaTemplate::where($search)->get();
+        }
+        return response()->json($word,200);
+        
+    }
     /**
      * Show the form for creating a new resource.
      *

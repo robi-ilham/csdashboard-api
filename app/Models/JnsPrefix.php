@@ -17,4 +17,10 @@ class JnsPrefix extends Model
     
 
     protected $guarded=[];
+
+    protected $with=['provider'];
+
+    public function provider(){
+        return $this->hasOne(JnsProvider::class,'id','provider_id');
+    }
 }

@@ -18,7 +18,51 @@ class JnsAuditTrailController extends Controller
 
         return response()->json($data,200);
     }
+    public function indexAjax(Request $request)
+    {
 
+        // $users= JnsWebUser::with('group')->paginate(5);
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $users= JnsAuditTrail::get();
+        }else{
+            if(!empty($request->model)){
+                $filter = ['model','like','%'.$request->model.'%'];
+                array_push($search,$filter);
+            }
+            // if(!empty($request->group_id)){
+            //     $filter = ['group_id','=',$request->group_id];
+            //     array_push($search,$filter);
+            // }
+            if(!empty($request->client_id)){
+                $filter = ['client_id','=',$request->client_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->division_id)){
+                $filter = ['division_id','=',$request->division_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->event)){
+                $filter = ['event','=',$request->event];
+                array_push($search,$filter);
+            }
+            if(!empty($request->start_date)){
+                $filter = ['created','>=',$request->start_date];
+                array_push($search,$filter);
+            }
+            if(!empty($request->end_date)){
+                $filter = ['created','<=',$request->end_date];
+                array_push($search,$filter);
+            }
+          //  return $search;
+            $users = JnsAuditTrail::where($search)->get();
+        }
+        return response()->json($users,200);
+        // $divisions = M2mUser::paginate(20);
+
+        // return response()->json($divisions);
+    }
     /**
      * Show the form for creating a new resource.
      *

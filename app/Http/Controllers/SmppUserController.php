@@ -14,6 +14,33 @@ class SmppUserController extends Controller
 
         return response()->json($data);
     }
+    public function indexAjax(Request $request){
+         $search=[];
+         if(empty($request)){
+            // echo 'ok';
+             $users= SmppUser::get();
+         }else{
+             if(!empty($request->username)){
+                 $filter = ['username','like','%'.$request->username.'%'];
+                 array_push($search,$filter);
+             }
+             if(!empty($request->group_id)){
+                 $filter = ['group_id','=',$request->group_id];
+                 array_push($search,$filter);
+             }
+             if(!empty($request->client_id)){
+                 $filter = ['client_id','=',$request->client_id];
+                 array_push($search,$filter);
+             }
+             if(!empty($request->division_id)){
+                 $filter = ['division_id','=',$request->division_id];
+                 array_push($search,$filter);
+             }
+             //return $search;
+             $users = SmppUser::where($search)->get();
+         }
+         return response()->json($users,200);
+     }
     public function indexAll()
     {
         $data = SmppUser::all();
@@ -39,7 +66,8 @@ class SmppUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'dr_format'=>'required|integer'
+            'client_id'=>'required|integer',
+            'system_id'=>'required'
         ]);
         $data = SmppUser::create([
             'system_id'=>$request->system_id,
@@ -49,10 +77,10 @@ class SmppUserController extends Controller
             'upload_by'=>$request->upload_type,
             'service_type'=>$request->service_type,
             'batchname'=>$request->batchname,
-            'use_optional_parameter'=>DB::raw($request->use_optional_parameter),
-            'use_expired_session'=>DB::raw($request->use_expired_session),
+            'use_optional_parameter'=>($request->use_optional_parameter==1)?true:false,
+            'use_expired_session'=>($request->use_expired_session==1)?true:false,
             'max_connection'=>$request->max_connection,
-            'dr_format'=>'int'
+            'dr_format'=>$request->dr_format
 
 
         ]);
@@ -118,7 +146,7 @@ class SmppUserController extends Controller
      */
     public function destroy($id)
     {
-        $data=SmppUser::find($id);
+        $data=SmppUser::where('client_id',$id);
         $data->delete();
         return response()->json(['message'=>'deleted'],200);
     }

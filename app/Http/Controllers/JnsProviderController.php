@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsMasking;
+use App\Models\JnsProvider;
 use Illuminate\Http\Request;
 
-class JnsMaskingController extends Controller
+class JnsProviderController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,35 +14,11 @@ class JnsMaskingController extends Controller
      */
     public function index()
     {
-        $data = JnsMasking::paginate(20);
+        $providers = JnsProvider::all();
 
-        return response()->json($data);
+        return response()->json($providers);
     }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsMasking::get();
-        }else{
-            
-            $word = JnsMasking::with('clients');
-            if(!empty($request->client_id)){
-                
-                $word=$word->whereRelation('clients', 'client_id', '=',$request->client_id);
-            }
-            if(!empty($request->masking)){
-                $filter = ['name','like','%'.$request->masking.'%'];
-                array_push($search,$filter);
-                $word=$word->where($search);
-            }
-          //  return $search;
-           return $word->get();
-        }
-        return response()->json($word,200);
-        
-    }
+
     /**
      * Show the form for creating a new resource.
      *

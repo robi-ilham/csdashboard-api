@@ -6,6 +6,7 @@ use App\Models\JnsBroadcastClient;
 use App\Models\JnsBroadcastDivision;
 use App\Models\M2mUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class M2mUserController extends Controller
 {
@@ -14,11 +15,71 @@ class M2mUserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $divisions = M2mUser::paginate(20);
 
-        return response()->json($divisions);
+        // $users= JnsWebUser::with('group')->paginate(5);
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $users= M2mUser::paginate(10);
+        }else{
+            if(!empty($request->username)){
+                $filter = ['username','like','%'.$request->username.'%'];
+                array_push($search,$filter);
+            }
+            if(!empty($request->group_id)){
+                $filter = ['group_id','=',$request->group_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->client_id)){
+                $filter = ['client_id','=',$request->client_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->division_id)){
+                $filter = ['division_id','=',$request->division_id];
+                array_push($search,$filter);
+            }
+            //return $search;
+            $users = M2mUser::where($search)->paginate(10);
+        }
+        return response()->json($users,200);
+        // $divisions = M2mUser::paginate(20);
+
+        // return response()->json($divisions);
+    }
+    public function indexAjax(Request $request)
+    {
+
+        // $users= JnsWebUser::with('group')->paginate(5);
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $users= M2mUser::get();
+        }else{
+            if(!empty($request->username)){
+                $filter = ['username','like','%'.$request->username.'%'];
+                array_push($search,$filter);
+            }
+            // if(!empty($request->group_id)){
+            //     $filter = ['group_id','=',$request->group_id];
+            //     array_push($search,$filter);
+            // }
+            if(!empty($request->client_id)){
+                $filter = ['client_id','=',$request->client_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->division_id)){
+                $filter = ['division_id','=',$request->division_id];
+                array_push($search,$filter);
+            }
+            //return $search;
+            $users = M2mUser::where($search)->get();
+        }
+        return response()->json($users,200);
+        // $divisions = M2mUser::paginate(20);
+
+        // return response()->json($divisions);
     }
     public function indexAll()
     {
@@ -44,9 +105,15 @@ class M2mUserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'username'=>'required'
+        // $request->validate([
+        //     'username'=>'required'
+        // ]);
+        $validator = Validator::make($request->all(),[
+            'username'=>'required|string'
         ]);
+        if($validator->fails()){
+            return response()->json($validator->errors(),500);
+        }
         $client = JnsBroadcastClient::find($request->client_id);
         $division = JnsBroadcastDivision::find($request->division_id);
         $data = M2mUser::create([
@@ -58,8 +125,8 @@ class M2mUserController extends Controller
             'api_key'=>$request->api_key,
             'username'=>$request->username,
             'password'=>$request->password,
-            'expiry'=>300,
-            'unbillable_access'=>0
+            'expiry'=>$request->expiry,
+            'unbillable_access'=>$request->unbillable_access
 
         ]);
 
@@ -111,10 +178,8 @@ class M2mUserController extends Controller
             'api_key'=>$request->api_key,
             'username'=>$request->username,
             'password'=>$request->password,
-            'expiry'=>300,
-            'unbillable_access'=>0
-
-
+            'expiry'=>$request->expiry,
+            'unbillable_access'=>$request->unbillable_access
         ]);
         return response()->json($division,200);
     }

@@ -18,7 +18,30 @@ class JnsPrefixController extends Controller
 
         return response()->json($data);
     }
-
+    public function indexAjax(Request $request)
+    {
+    
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $word= JnsPrefix::get();
+        }else{
+            $word = JnsPrefix::with('provider');
+            if(!empty($request->provider_id)){
+                
+                $word=$word->whereRelation('provider', 'id', '=',$request->provider_id);
+            }
+            if(!empty($request->description)){
+                $filter = ['description','like','%'.$request->description.'%'];
+                array_push($search,$filter);
+                $word=$word->where($search);
+            }
+          //  return $search;
+           return $word->get();
+        }
+        return response()->json($word,200);
+        
+    }
     /**
      * Show the form for creating a new resource.
      *

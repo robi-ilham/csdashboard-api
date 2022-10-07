@@ -16,4 +16,20 @@ class JnsDeliveryReport extends Model
     
 
     protected $guarded=[];
+
+    protected $with=['client','division','mask','category'];
+
+    public function client(){
+        return $this->hasOne(JnsBroadcastClient::class,'id','client_id');
+    }
+    public function division(){
+        return $this->
+        hasOne(JnsBroadcastDivision::class,'id','division_id');
+    }
+    public function mask(){
+        return $this->hasOne(BroadcastMasks::class,'id','mask_id');
+    }
+    public function category(){
+        return $this->hasOne(BroadcastDrpushCategory::class,'id','drpush_category_id');
+    }
 }

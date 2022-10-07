@@ -21,5 +21,8 @@ class SmppUser extends Model
     public function client(){
         return $this->hasOne(JnsBroadcastClient::class,'id','client_id');
     }
+    public function division(){
+        return $this->hasOne(JnsBroadcastDivision::class,'id','division_id');
+    }
 }
 

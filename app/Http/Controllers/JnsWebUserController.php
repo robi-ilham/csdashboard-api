@@ -8,32 +8,61 @@ use Illuminate\Http\Request;
 class JnsWebUserController extends Controller
 {
     public function index(Request $request){
-        $users= JnsWebUser::paginate();
+       // $users= JnsWebUser::with('group')->paginate(5);
         $search=[];
         if(empty($request)){
-            $users= JnsWebUser::paginate();
+           // echo 'ok';
+            $users= JnsWebUser::paginate(10);
         }else{
             if(!empty($request->username)){
                 $filter = ['username','like','%'.$request->username.'%'];
                 array_push($search,$filter);
             }
             if(!empty($request->group_id)){
-                $filter = ['group_id','=',$request->username];
+                $filter = ['group_id','=',$request->group_id];
                 array_push($search,$filter);
             }
             if(!empty($request->client_id)){
-                $filter = ['group_id','=',$request->client_id];
+                $filter = ['client_id','=',$request->client_id];
                 array_push($search,$filter);
             }
             if(!empty($request->division_id)){
-                $filter = ['group_id','=',$request->division_id];
+                $filter = ['division_id','=',$request->division_id];
                 array_push($search,$filter);
             }
             //return $search;
-            $users = JnsWebUser::where($search)->paginate();
+            $users = JnsWebUser::where($search)->paginate(10);
         }
         return response()->json($users,200);
     }
+    public function indexAjax(Request $request){
+        // $users= JnsWebUser::with('group')->paginate(5);
+         $search=[];
+         if(empty($request)){
+            // echo 'ok';
+             $users= JnsWebUser::get();
+         }else{
+             if(!empty($request->username)){
+                 $filter = ['username','like','%'.$request->username.'%'];
+                 array_push($search,$filter);
+             }
+             if(!empty($request->group_id)){
+                 $filter = ['group_id','=',$request->group_id];
+                 array_push($search,$filter);
+             }
+             if(!empty($request->client_id)){
+                 $filter = ['client_id','=',$request->client_id];
+                 array_push($search,$filter);
+             }
+             if(!empty($request->division_id)){
+                 $filter = ['division_id','=',$request->division_id];
+                 array_push($search,$filter);
+             }
+             //return $search;
+             $users = JnsWebUser::where($search)->get();
+         }
+         return response()->json($users,200);
+     }
 
     public function store(Request $request){
         $request->validate([

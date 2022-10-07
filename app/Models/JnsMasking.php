@@ -9,11 +9,17 @@ class JnsMasking extends Model
 {
     use HasFactory;
     protected $connection = 'jnsbroadcast';
-    protected $table = 'dr_push_accesses';
+    protected $table = 'masks';
 
     const CREATED_AT = 'date_created';
     const UPDATED_AT = 'date_modified';
     
 
     protected $guarded=[];
+
+    protected $with= ['clients'];
+    
+    public function clients(){
+        return $this->hasMany(BroadcastMaskClient::class,'mask_id','id');
+    }
 }

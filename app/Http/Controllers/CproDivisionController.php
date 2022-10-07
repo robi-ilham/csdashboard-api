@@ -103,6 +103,19 @@ class CproDivisionController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $token = CproService::getToken();
+
+        if(!$token){
+            $response=[
+                'status'=>0,
+                'message'=>'login cpro failed'
+            ];
+            return  response()->json($response,401);
+        }
+        $url = $url=env('CPRO_HOST').'/api/user-delete-account';
+        $headers = ['Authorization'=>$token];
+        $data=['username'=>$id];
+        $response = Http::asForm()->withHeaders($headers)->post($url,$data)->json();
+        return response()->json($response);
     }
 }
