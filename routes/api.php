@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CproAuditTrail;
 use App\Http\Controllers\CproClient;
@@ -44,6 +45,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
+
+Route::resource('alert', AlertController::class);
+
 Route::prefix('/cpro')->group(function () { 
     Route::resource('user', CproUser::class);
     Route::resource('division', CproDivisionController::class);
@@ -55,12 +59,19 @@ Route::prefix('/cpro')->group(function () {
 Route::group(['middleware'=>'auth:sanctum'],function(){
     Route::post('/logout',[AuthController::class,'logout']);
     Route::resource('user', UserContrroller::class);
+
+   
+
+
     
     //JNS
     Route::prefix('/jns')->group(function () {
         Route::resource('group', JnsWebGroupController::class);
+
         Route::get('user/index-ajax',[JnsWebUserController::class,'indexAjax'])->name('user.ajax');
+        Route::post('user/reset-password',[JnsWebUserController::class,'resetPassword'])->name('user.resetpassword');
         Route::resource('user', JnsWebUserController::class);
+
         Route::resource('division', JnsBroadcastDivisionController::class);
         Route::get('divisions/all',[JnsBroadcastDivisionController::class,'indexAll'])->name('divisions.all');
         Route::resource('client', JnsBroadcastCLientController::class);

@@ -16,9 +16,29 @@ class CproDivisionController extends Controller
      */
     public function index()
     {
-        $divisions = CproDivision::paginate(20);
+        // $divisions = CproDivision::paginate(20);
 
-        return response()->json($divisions);
+        // return response()->json($divisions);
+
+        $search=[];
+        if(empty($request)){
+            $divisions= CproDivision::paginate(10);
+        }else{
+            
+            $divisions = CproDivision::with('client');
+            if(!empty($request->client_id)){
+                
+                $filter = ['client_id','=',$request->client_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->name)){
+                $filter = ['name','=','%'.$request->name.'%'];
+                array_push($search,$filter);
+                
+            }
+            $divisions=$divisions->where($search);
+           return $divisions->paginate(10);
+        }
     }
     public function indexAll()
     {
