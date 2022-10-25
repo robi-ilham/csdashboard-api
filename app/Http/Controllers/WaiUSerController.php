@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WaiUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class WaiUSerController extends Controller
 {
@@ -68,11 +69,13 @@ class WaiUSerController extends Controller
             'username'=>'required',
             'password'=>'required'
         ]);
+
+       
         $data = WaiUser::create([
             'name'=>$request->name,
             'username'=>$request->username,
             'client_id'=>$request->client_id,
-            'password'=>sha1($request->password),
+            'password'=>sha1($request->password.env('WAI_SALT')),
             'division_id'=>$request->division_id,
             'group_id'=>$request->group_id,
             'status'=>'new',

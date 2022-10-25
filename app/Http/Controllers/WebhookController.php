@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsPrivilege;
+use App\Models\WebHook;
 use Illuminate\Http\Request;
 
-class JnsPrivilegeController extends Controller
+class WebhookController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,31 +14,20 @@ class JnsPrivilegeController extends Controller
      */
     public function index()
     {
-        $data = JnsPrivilege::paginate(20);
-
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
         $search=[];
         if(empty($request)){
-           // echo 'ok';    
-            $word= JnsPrivilege::get();
+           // echo 'ok';
+            $webhook= WebHook::get();
         }else{
-            if(!empty($request->msisdn)){
-                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
+         
+            if(!empty($request->shortcode)){
+                $filter = ['Shortcode','like','%'.$request->shortcode.'%'];
                 array_push($search,$filter);
             }
           //  return $search;
-            $word = JnsPrivilege::where($search)->get();
+          $webhook=WebHook::where($search)->get();
         }
-        return response()->json($word,200);
-        
+        return response()->json($webhook,200);
     }
 
     /**
@@ -48,7 +37,7 @@ class JnsPrivilegeController extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**

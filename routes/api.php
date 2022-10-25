@@ -7,6 +7,8 @@ use App\Http\Controllers\CproClient;
 use App\Http\Controllers\CproDivisionController;
 use App\Http\Controllers\CproSender;
 use App\Http\Controllers\CproUser;
+use App\Http\Controllers\CstoolAuditController;
+use App\Http\Controllers\InformationController;
 use App\Http\Controllers\JnsAuditTrailController;
 use App\Http\Controllers\JnsBlackListController;
 use App\Http\Controllers\JnsBroadcastCLientController;
@@ -25,9 +27,11 @@ use App\Http\Controllers\JnsWebUserController;
 use App\Http\Controllers\M2mUserController;
 use App\Http\Controllers\PctController;
 use App\Http\Controllers\ReportCpro;
+use App\Http\Controllers\senderControlller;
 use App\Http\Controllers\SmppUserController;
 use App\Http\Controllers\UserContrroller;
 use App\Http\Controllers\WaiUSerController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -49,6 +53,7 @@ Route::post('/login',[AuthController::class,'login']);
 Route::resource('alert', AlertController::class);
 
 Route::prefix('/cpro')->group(function () { 
+    Route::post('user/reset-password',[CproUser::class,'resetPassword'])->name('user.resetpassword');
     Route::resource('user', CproUser::class);
     Route::resource('division', CproDivisionController::class);
     Route::resource('client', CproClient::class);
@@ -58,7 +63,10 @@ Route::prefix('/cpro')->group(function () {
 
 Route::group(['middleware'=>'auth:sanctum'],function(){
     Route::post('/logout',[AuthController::class,'logout']);
+    Route::post('user/reset-password',[UserContrroller::class,'resetPassword'])->name('user.resetpassword');
     Route::resource('user', UserContrroller::class);
+    Route::resource('audit', CstoolAuditController::class);
+    Route::resource('information', InformationController::class);
 
    
 
@@ -124,6 +132,8 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
     Route::prefix('/wai')->group(function () {
         Route::get('user/index-ajax',[WaiUSerController::class,'indexAjax'])->name('user.ajax');
         Route::resource('user', WaiUSerController::class);
+        Route::resource('webhook', WebhookController::class);
+        Route::resource('sender', senderControlller::class);
     });
     //PCT
     Route::prefix('/pct')->group(function () {

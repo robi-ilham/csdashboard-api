@@ -32,4 +32,5 @@ class JnsDeliveryReport extends Model
     public function category(){
         return $this->hasOne(BroadcastDrpushCategory::class,'id','drpush_category_id');
     }
+   
 }

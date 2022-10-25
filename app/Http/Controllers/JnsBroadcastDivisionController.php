@@ -12,11 +12,28 @@ class JnsBroadcastDivisionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $divisions = JnsBroadcastDivision::paginate(20);
 
-        return response()->json($divisions);
+        $search = [];
+        if (empty($request)) {
+            // echo 'ok';
+            $users = JnsBroadcastDivision::paginate(10);
+        } else {
+            
+            if (!empty($request->client_id)) {
+                $filter = ['client_id', '=', $request->client_id];
+                array_push($search, $filter);
+            }
+            if (!empty($request->name)) {
+                $filter = ['name', 'like', '%'.$request->name.'%'];
+                array_push($search, $filter);
+            }
+            
+            $users = JnsBroadcastDivision::where($search)->paginate(10);
+        }
+        return response()->json($users, 200);
+        
     }
     public function indexAll()
     {

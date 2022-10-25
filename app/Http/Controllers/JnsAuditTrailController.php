@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JnsAuditTrail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class JnsAuditTrailController extends Controller
@@ -25,8 +26,9 @@ class JnsAuditTrailController extends Controller
         $search=[];
         if(empty($request)){
            // echo 'ok';
-            $users= JnsAuditTrail::get();
+            $audit= JnsAuditTrail::get();
         }else{
+            $audit=JnsAuditTrail::with('user');
             if(!empty($request->model)){
                 $filter = ['model','like','%'.$request->model.'%'];
                 array_push($search,$filter);
@@ -36,12 +38,10 @@ class JnsAuditTrailController extends Controller
             //     array_push($search,$filter);
             // }
             if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
+                $audit=$audit->whereRelation('user', 'client_id', '=',$request->client_id);
             }
             if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
+                $audit=$audit->whereRelation('user', 'division_id', '=',$request->division_id);
             }
             if(!empty($request->event)){
                 $filter = ['event','=',$request->event];
@@ -56,9 +56,9 @@ class JnsAuditTrailController extends Controller
                 array_push($search,$filter);
             }
           //  return $search;
-            $users = JnsAuditTrail::where($search)->get();
+            $audit= $audit->where($search)->get();
         }
-        return response()->json($users,200);
+        return response()->json($audit,200);
         // $divisions = M2mUser::paginate(20);
 
         // return response()->json($divisions);

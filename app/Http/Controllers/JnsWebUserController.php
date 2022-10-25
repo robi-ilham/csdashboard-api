@@ -31,6 +31,10 @@ class JnsWebUserController extends Controller
                 $filter = ['division_id', '=', $request->division_id];
                 array_push($search, $filter);
             }
+            if (!empty($request->status)) {
+                $filter = ['status', '=', $request->status];
+                array_push($search, $filter);
+            }
             //return $search;
             $users = JnsWebUser::where($search)->paginate(10);
         }
@@ -99,21 +103,20 @@ class JnsWebUserController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'username' => 'required|string',
             'name' => 'required',
         ]);
 
         $user = JnsWebUser::findOrFail($id)->update([
             'name' => $request->name,
-            'username' => $request->username,
-            'password' => $request->password,
+            // 'username' => $request->username,
+            // 'password' => $request->password,
             'email' => $request->email,
-            'status' => 1,
-            'expiry_mode_id' => $request->expiry_mode_id,
-            'expiry' => $request->expiry,
-            'group_id' => $request->group_id,
-            'client_id' => $request->client_id,
-            'division_id' => $request->division_id,
+            'status' => $request->status,
+            // 'expiry_mode_id' => $request->expiry_mode_id,
+            // 'expiry' => $request->expiry,
+            // 'group_id' => $request->group_id,
+            // 'client_id' => $request->client_id,
+            // 'division_id' => $request->division_id,
             'use_sha256' => 0
         ]);
 

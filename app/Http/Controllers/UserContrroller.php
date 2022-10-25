@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class UserContrroller extends Controller
@@ -55,7 +56,7 @@ class UserContrroller extends Controller
         $user=User::create([
             'name'=>$request->name,
             'email'=>$request->email,
-            'password'=>bcrypt($request->password)
+            'password'=>Hash::make($request->password)
 
         ]);
 
@@ -106,7 +107,8 @@ class UserContrroller extends Controller
 
         $user=User::findOrFail($user)->update([
             'name'=>$request->name,
-            'email'=>$request->email
+            'email'=>$request->email,
+            'status'=>$request->status
         ]);
 
         $response=[
@@ -116,19 +118,28 @@ class UserContrroller extends Controller
         return response()->json($response);
     }
 
-    public function resetPassword(Request $request){
+    public function resetPassword(Request $request)
+    {
         $request->validate([
-            'password'=>[
-                'required',
-                'confirmed',
-                Password::min(8)
+            'old_password' => 'required|min:8',
+            Password::min(8)
                     ->mixedCase()
                     ->letters()
                     ->numbers()
                     ->symbols()
                     ->uncompromised(),
-            ],
         ]);
+        $user = User::where([
+            ['id', '=', $request->id],
+            ['password', '=', Hash::make($request->old_password)]
+        ])->first();
+       print_r($user);
+        if ($user) {
+            $user->update(['password' => bcrypt($request->password)]);
+            return response()->json($user);
+        }else{
+            return response()->json(['message'=>'user not found'],404);
+        }
     }
 
     /**
@@ -142,4 +153,6 @@ class UserContrroller extends Controller
         $user=User::findOrFail($user)->delete();
         return response()->json(['message'=>'deleted'],200);
     }
+
+    
 }

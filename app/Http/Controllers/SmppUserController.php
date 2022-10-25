@@ -36,6 +36,18 @@ class SmppUserController extends Controller
                  $filter = ['division_id','=',$request->division_id];
                  array_push($search,$filter);
              }
+             if(!empty($request->service_type)){
+                $filter = ['service_type','=',$request->service_type];
+                array_push($search,$filter);
+            }
+            if(!empty($request->system_id)){
+                $filter = ['service_type','=',$request->system_id];
+                array_push($search,$filter);
+            }
+            if(!empty($request->batchname)){
+                $filter = ['batchname','=',$request->batchname];
+                array_push($search,$filter);
+            }
              //return $search;
              $users = SmppUser::where($search)->get();
          }
@@ -74,7 +86,7 @@ class SmppUserController extends Controller
             'client_id'=>$request->client_id,
             'password'=>$request->password,
             'division'=>$request->division,
-            'upload_by'=>$request->upload_type,
+            'upload_by'=>$request->upload_by,
             'service_type'=>$request->service_type,
             'batchname'=>$request->batchname,
             'use_optional_parameter'=>($request->use_optional_parameter==1)?true:false,

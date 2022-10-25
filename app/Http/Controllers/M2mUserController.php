@@ -109,7 +109,14 @@ class M2mUserController extends Controller
         //     'username'=>'required'
         // ]);
         $validator = Validator::make($request->all(),[
-            'username'=>'required|string'
+            'username'=>'required|string',
+            'password'=>'required|string',
+            'client_name'=>'required',
+            'client_id'=>'required',
+            'division_id'=>'required',
+            'access_mod'=>'required',
+            'api_key'=>'required',
+            'expiry'=>'required'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors(),500);
@@ -166,7 +173,14 @@ class M2mUserController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'username'=>'required'
+            'username'=>'required|string',
+            'password'=>'required|string',
+            'client_name'=>'required',
+            'client_id'=>'required',
+            'division_id'=>'required',
+            'access_mod'=>'required',
+            'api_key'=>'required',
+            'expiry'=>'required'
         ]);
         //dd($request);
         $division = M2mUser::findOrFail($id)->update([

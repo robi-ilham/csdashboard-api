@@ -25,9 +25,9 @@ class AuthController extends Controller
         ]);
 
 
-        if(!Auth::attempt($cred)){
+        if(!Auth::attempt(['email' => $request->email, 'password' => $request->password, 'status' => 1])){
             return response()->json([
-                'message'=>'bad credentials'
+                'message'=>'sorry, login failed. if your username and password are correct. maybe you are blocked'
             ],401);
            
         }

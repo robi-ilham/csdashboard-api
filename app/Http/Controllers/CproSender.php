@@ -28,7 +28,7 @@ class CproSender extends Controller
         $headers = ['Authorization'=>$token];
         $body = '{
             "data": {
-                "client-id": 550
+                "client-id":'.$request->client_id.'
             }
         }';
         $response = Http::withHeaders($headers)->withBody($body,'application/json')->post($url)->json();

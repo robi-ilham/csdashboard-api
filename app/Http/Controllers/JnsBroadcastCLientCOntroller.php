@@ -12,10 +12,28 @@ class JnsBroadcastCLientController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = JnsBroadcastClient::paginate(20);
+
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $clients= JnsBroadcastClient::get();
+        }else{
+            if(!empty($request->name)){
+                $filter = ['name','=',$request->name];
+                array_push($search,$filter);
+            }
+          
+            if(!empty($request->active)){
+                $filter = ['active','=',$request->active];
+                array_push($search,$filter);
+            }
+            $clients=JnsBroadcastClient::where($search)->get();
+            
+        }
         return response()->json($clients,200);
+       
     }
 
     public function indexAll()

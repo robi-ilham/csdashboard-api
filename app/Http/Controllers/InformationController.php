@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsPrivilege;
+use App\Models\Information;
 use Illuminate\Http\Request;
 
-class JnsPrivilegeController extends Controller
+class InformationController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,31 +14,8 @@ class JnsPrivilegeController extends Controller
      */
     public function index()
     {
-        $data = JnsPrivilege::paginate(20);
-
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';    
-            $word= JnsPrivilege::get();
-        }else{
-            if(!empty($request->msisdn)){
-                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsPrivilege::where($search)->get();
-        }
-        return response()->json($word,200);
-        
+        $data = Information::paginate(10);
+        return response()->json($data,200);
     }
 
     /**
@@ -59,7 +36,11 @@ class JnsPrivilegeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $store = Information::create([
+            'name'=>$request->name,
+            'information'=>$request->information
+        ]);
+        return $store;
     }
 
     /**
@@ -93,7 +74,11 @@ class JnsPrivilegeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $store = Information::findOrFail($id)->update([
+            'name'=>$request->name,
+            'information'=>$request->information
+        ]);
+        return response()->json($store,200);
     }
 
     /**
@@ -104,6 +89,7 @@ class JnsPrivilegeController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $destroy= Information::findOrFail($id);
+        return $destroy->delete();
     }
 }

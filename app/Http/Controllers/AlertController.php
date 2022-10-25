@@ -24,7 +24,24 @@ class AlertController extends Controller
      */
     public function create()
     {
-        //
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $data= AlertModel::get();
+        }else{
+         
+            if(!empty($request->name)){
+                $filter = ['name','=',$request->name];
+                array_push($search,$filter);
+            }
+            if(!empty($request->application)){
+                $filter = ['application','=',$request->application];
+                array_push($search,$filter);
+            }
+          //  return $search;
+          $data=AlertModel::where($search)->get();
+        }
+        return response()->json($data,200);
     }
 
     /**
@@ -35,7 +52,13 @@ class AlertController extends Controller
      */
     public function store(Request $request)
     {
-        $alert=AlertModel::create(['raw'=>$request]);
+        $alert=AlertModel::create([
+            'name'=>$request->commonLabels->alertname,
+            'application'=>$request->commonLabels->app,
+            'message'=>$request->commonAnnotations->summary,
+            'raw'=>$request
+        ]);
+        return $alert;
         
     }
 

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsPrivilege;
+use App\Models\CstoolAudit;
 use Illuminate\Http\Request;
 
-class JnsPrivilegeController extends Controller
+class CstoolAuditController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,31 +14,24 @@ class JnsPrivilegeController extends Controller
      */
     public function index()
     {
-        $data = JnsPrivilege::paginate(20);
-
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
         $search=[];
         if(empty($request)){
-           // echo 'ok';    
-            $word= JnsPrivilege::get();
+           // echo 'ok';
+            $data= CstoolAudit::get();
         }else{
-            if(!empty($request->msisdn)){
-                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
+         
+            if(!empty($request->appname)){
+                $filter = ['appname','=',$request->shortcode];
                 array_push($search,$filter);
             }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
+            if(!empty($request->type)){
+                $filter = ['type','=',$request->type];
                 array_push($search,$filter);
             }
           //  return $search;
-            $word = JnsPrivilege::where($search)->get();
+          $data=CstoolAudit::where($search)->get();
         }
-        return response()->json($word,200);
-        
+        return response()->json($data,200);
     }
 
     /**
