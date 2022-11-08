@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsDeliveryReport;
+use App\Service\CproService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
-class JnsDeliveryReportController extends Controller
+class CproTemplate extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,40 +15,39 @@ class JnsDeliveryReportController extends Controller
      */
     public function index()
     {
-        $data = JnsDeliveryReport::paginate(20);
+        $param='{
+            "query": {
+                "search": {
+                    "client-id": 0,
+                    "sender-id": "",
+                    "template-id": 0,
+                    "template-type": "",
+                    "media-type": "",
+                    "template-name": "",
+                    "template-status": -1
+                },
+                "page": 1,
+                "page-size": 1000,
+                "order-by": 6,
+                "order": "DESC"
+            }
+        }';
+        $token = CproService::getToken();
 
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsDeliveryReport::get();
-        }else{
-            if(!empty($request->drpush_category_id)){
-                $filter = ['drpush_category_id','=',$request->drpush_category_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->type)){
-                $filter = ['division_id','=',$request->type];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsDeliveryReport::where($search)->get();
+        if(!$token){
+            $response=[
+                'status'=>0,
+                'message'=>'login cpro failed'
+            ];
+            return  response()->json($response,401);
         }
-        return response()->json($word,200);
+        $url = $url=env('CPRO_HOST').'/api/config-hsmtemplate-list';
+        $headers = ['Authorization'=>$token];
         
+        $response = Http::withHeaders($headers)->withBody($param,'application/json')->post($url)->json();
+        return $response;
     }
+
     /**
      * Show the form for creating a new resource.
      *

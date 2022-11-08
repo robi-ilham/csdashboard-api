@@ -2,52 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsDeliveryReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-class JnsDeliveryReportController extends Controller
+class PctDivisionOwner extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = JnsDeliveryReport::paginate(20);
+        $today=date('Y-m-d');
+       // return $request;
+        $data = DB::connection('sqlsrv')->table('JTS_CLI_HistoryARMClient')
+                ->select('JTS_CLI_HistoryARMClient.iARMId','JTS_GEN_ARM.szARMName')
+                ->distinct()
+                ->join('JTS_GEN_ARM','JTS_CLI_HistoryARMClient.iARMId','=','JTS_GEN_ARM.iId')
+               ->where('dtmDateEffectiveEnd',null)
+                ->where('JTS_CLI_HistoryARMClient.iClientId',$request->id)
+                ->orWhere(function($query) use($today){
+                    $query->where('dtmDateEffectiveStart','>=',$today)
+                    ->where('dtmDateEffectiveEnd','<=',$today);
+                })
+                ->get();
+        return $data;
+    }
 
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsDeliveryReport::get();
-        }else{
-            if(!empty($request->drpush_category_id)){
-                $filter = ['drpush_category_id','=',$request->drpush_category_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->type)){
-                $filter = ['division_id','=',$request->type];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsDeliveryReport::where($search)->get();
-        }
-        return response()->json($word,200);
-        
-    }
     /**
      * Show the form for creating a new resource.
      *
@@ -66,7 +48,7 @@ class JnsDeliveryReportController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**

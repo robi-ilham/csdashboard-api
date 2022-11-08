@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Information;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class InformationController extends Controller
 {
@@ -12,10 +13,32 @@ class InformationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Information::paginate(10);
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';    
+            $data= Information::get();
+        }else{
+            if(!empty($request->name)){
+                $filter = ['name','like','%'.$request->name.'%'];
+                array_push($search,$filter);
+            }
+            if(!empty($request->information)){
+                $filter = ['information','like','%'.$request->information.'%'];
+                array_push($search,$filter);
+            }
+
+            if(!empty($request->created_at)){
+                $filter = ['date(created_at)','=',$request->created_at];
+                array_push($search,$filter);
+            }
+           
+            //return $search;
+            $data = Information::where($search)->get();
+        }
         return response()->json($data,200);
+       ;
     }
 
     /**
@@ -38,7 +61,8 @@ class InformationController extends Controller
     {
         $store = Information::create([
             'name'=>$request->name,
-            'information'=>$request->information
+            'information'=>$request->information,
+            'created_by'=>Auth::user()->id
         ]);
         return $store;
     }
@@ -51,7 +75,7 @@ class InformationController extends Controller
      */
     public function show($id)
     {
-        //
+        return Information::find($id);
     }
 
     /**
@@ -76,7 +100,8 @@ class InformationController extends Controller
     {
         $store = Information::findOrFail($id)->update([
             'name'=>$request->name,
-            'information'=>$request->information
+            'information'=>$request->information,
+            
         ]);
         return response()->json($store,200);
     }

@@ -26,15 +26,23 @@ class JnsTokenMapController extends Controller
            // echo 'ok';
             $word= JnsTokenMap::paginate(10);
         }else{
-            if(!empty($request->msisdn)){
-                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
+            if(!empty($request->account_no)){
+                $filter = ['account_no','like','%'.$request->account_no.'%'];
+                array_push($search,$filter);
+            }
+            if(!empty($request->charge_code)){
+                $filter = ['charge_code','like','%'.$request->charge_code.'%'];
                 array_push($search,$filter);
             }
             if(!empty($request->client_id)){
                 $filter = ['client_id','=',$request->client_id];
                 array_push($search,$filter);
             }
-          //  return $search;
+            if(!empty($request->division_id)){
+                $filter = ['client_id','=',$request->division_id];
+                array_push($search,$filter);
+            }
+            
             $word = JnsTokenMap::where($search)->paginate(10);
         }
         return response()->json($word,200);

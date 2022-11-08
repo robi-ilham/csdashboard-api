@@ -26,8 +26,8 @@ class JnsPrivilegeController extends Controller
            // echo 'ok';    
             $word= JnsPrivilege::get();
         }else{
-            if(!empty($request->msisdn)){
-                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
+            if(!empty($request->privilege_type_id)){
+                $filter = ['privilege_type_id','=',$request->privilege_type_id];
                 array_push($search,$filter);
             }
             if(!empty($request->client_id)){

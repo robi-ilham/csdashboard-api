@@ -26,9 +26,10 @@ class CproSender extends Controller
         }
         $url = $url=env('CPRO_HOST').'/api/config-sender-combo';
         $headers = ['Authorization'=>$token];
+        $clientid=isset($request->client_id)?$request->client_id:550;
         $body = '{
             "data": {
-                "client-id":'.$request->client_id.'
+                "client-id":'.$clientid.'
             }
         }';
         $response = Http::withHeaders($headers)->withBody($body,'application/json')->post($url)->json();

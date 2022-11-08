@@ -12,9 +12,27 @@ class AlertController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $search=[];
+        if(empty($request)){
+           // echo 'ok';
+            $data= AlertModel::get();
+        }else{
+         $data=AlertModel::select('*');
+            if(!empty($request->name)){
+                $data=$data->where('name','like','%'.$request->name.'%');
+            }
+            if(!empty($request->application)){
+                $data=$data->where('application','like','%'.$request->application.'%');
+            }
+            if(!empty($request->created_at)){
+                $data=$data->whereDate('created_at', '=', $request->created_at);;
+            }
+           //return $search;
+          $data=$data->get();
+        }
+        return response()->json($data,200);
     }
 
     /**
@@ -24,24 +42,7 @@ class AlertController extends Controller
      */
     public function create()
     {
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $data= AlertModel::get();
-        }else{
-         
-            if(!empty($request->name)){
-                $filter = ['name','=',$request->name];
-                array_push($search,$filter);
-            }
-            if(!empty($request->application)){
-                $filter = ['application','=',$request->application];
-                array_push($search,$filter);
-            }
-          //  return $search;
-          $data=AlertModel::where($search)->get();
-        }
-        return response()->json($data,200);
+        
     }
 
     /**
@@ -52,13 +53,26 @@ class AlertController extends Controller
      */
     public function store(Request $request)
     {
-        $alert=AlertModel::create([
-            'name'=>$request->commonLabels->alertname,
-            'application'=>$request->commonLabels->app,
-            'message'=>$request->commonAnnotations->summary,
+        // $insert=[
+        //     'name'=>$request->commonLabels->alertname,
+        //     'application'=>$request->commonLabels->app,
+        //     'message'=>$request->commonAnnotations->summary,
+        //     'raw'=>$request
+        // ];
+        foreach($request->alerts as $alert){
+            $alertname=$alert['labels']['alertname'];
+            $app=$alert['labels']['app'];
+            $message = $alert['annotations']['summary'];
+
+            $insert=[
+            'name'=>$alertname,
+            'application'=>$app,
+            'message'=>$message,
             'raw'=>$request
-        ]);
-        return $alert;
+        ];
+        $alert=AlertModel::create($insert);
+        }
+      
         
     }
 

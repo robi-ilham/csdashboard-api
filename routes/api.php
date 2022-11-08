@@ -3,11 +3,17 @@
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CproAuditTrail;
+use App\Http\Controllers\CproBroadcastController;
+use App\Http\Controllers\CproButtonController;
+use App\Http\Controllers\CproChatbotController;
 use App\Http\Controllers\CproClient;
 use App\Http\Controllers\CproDivisionController;
+use App\Http\Controllers\CproHelpdeskController;
 use App\Http\Controllers\CproSender;
+use App\Http\Controllers\CproTemplate;
 use App\Http\Controllers\CproUser;
 use App\Http\Controllers\CstoolAuditController;
+use App\Http\Controllers\DrCategory;
 use App\Http\Controllers\InformationController;
 use App\Http\Controllers\JnsAuditTrailController;
 use App\Http\Controllers\JnsBlackListController;
@@ -25,13 +31,20 @@ use App\Http\Controllers\JnsWaTemplateController;
 use App\Http\Controllers\JnsWebGroupController;
 use App\Http\Controllers\JnsWebUserController;
 use App\Http\Controllers\M2mUserController;
+use App\Http\Controllers\PctClientController;
 use App\Http\Controllers\PctController;
+use App\Http\Controllers\PctDivisionController;
+use App\Http\Controllers\PctDivisionOwner;
+use App\Http\Controllers\PrivilegeTypeController;
 use App\Http\Controllers\ReportCpro;
 use App\Http\Controllers\senderControlller;
 use App\Http\Controllers\SmppUserController;
+use App\Http\Controllers\SmsPushReportController;
 use App\Http\Controllers\UserContrroller;
 use App\Http\Controllers\WaiUSerController;
+use App\Http\Controllers\WaPushReportController;
 use App\Http\Controllers\WebhookController;
+use App\Models\PctClientDivision;
 use Illuminate\Support\Facades\Route;
 
 
@@ -55,10 +68,16 @@ Route::resource('alert', AlertController::class);
 Route::prefix('/cpro')->group(function () { 
     Route::post('user/reset-password',[CproUser::class,'resetPassword'])->name('user.resetpassword');
     Route::resource('user', CproUser::class);
+    Route::get('division/index-api',[CproDivisionController::class,'indexApi'])->name('division.indexapi');
     Route::resource('division', CproDivisionController::class);
     Route::resource('client', CproClient::class);
     Route::resource('sender', CproSender::class);
     Route::resource('audit-trail', CproAuditTrail::class);
+    Route::resource('broadcast', CproBroadcastController::class);
+    Route::resource('button', CproButtonController::class);
+    Route::resource('chatbot', CproChatbotController::class);
+    Route::resource('helpdesk', CproHelpdeskController::class);
+    Route::resource('template', CproTemplate::class);
 });
 
 Route::group(['middleware'=>'auth:sanctum'],function(){
@@ -82,6 +101,7 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
 
         Route::resource('division', JnsBroadcastDivisionController::class);
         Route::get('divisions/all',[JnsBroadcastDivisionController::class,'indexAll'])->name('divisions.all');
+
         Route::resource('client', JnsBroadcastCLientController::class);
         Route::get('clients/all',[JnsBroadcastCLientCOntroller::class,'indexAll'])->name('clients.all');
 
@@ -117,6 +137,10 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
         Route::get('watemplate/index-ajax',[JnsWaTemplateController::class,'indexAjax'])->name('watemplate.ajax');
         Route::resource('watemplate', JnsWaTemplateController::class);
 
+        Route::resource('drcategory', DrCategory::class);
+
+        Route::resource('privilegetype', PrivilegeTypeController::class);
+
     });
     //M2m
     Route::prefix('/m2m')->group(function () {
@@ -137,14 +161,21 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
     });
     //PCT
     Route::prefix('/pct')->group(function () {
-        Route::get('/client',[PctController::class,'clientList']);
+        Route::resource('division', PctDivisionController::class);
+        Route::get('client/all',[PctClientController::class,'indexAll'])->name('client.all');
+        Route::resource('client', PctClientController::class);
+        Route::resource('owner', PctDivisionOwner::class);
     });
     Route::prefix('/report')->group(function () {
         Route::prefix('/cpro')->group(function () {
             Route::get('/broadcast-list',[ReportCpro::class,'broadcastList']);
             Route::get('/helpdesk-list',[ReportCpro::class,'helpdeskList']);
-            Route::get('/chatbot-list',[ReportCpro::class,'chatbotList']);
+           // Route::get('/chatbot-list',[ReportCpro::class,'chatbotList']);
         });
+       // Route::get('/wa-push',[WaPushReportController::class,'index']);
+        Route::resource('wa-push', WaPushReportController::class);
+        Route::resource('sms-push', SmsPushReportController::class);
+        //Route::get('/sms-push',[SmsPushReportController::class,'index']);
     });
 
 

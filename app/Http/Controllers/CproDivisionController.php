@@ -40,11 +40,37 @@ class CproDivisionController extends Controller
            return $divisions->paginate(10);
         }
     }
+    
     public function indexAll()
     {
         $divisions = CproDivision::all();
 
         return response()->json($divisions);
+    }
+    public function indexApi(Request $request){
+        $token = CproService::getToken();
+
+        if(!$token){
+            $response=[
+                'status'=>0,
+                'message'=>'login cpro failed'
+            ];
+            return  response()->json($response,401);
+        }
+        $url = $url=env('CPRO_HOST').'/api/user-division-list';
+        $headers = ['Authorization'=>$token];
+        $body = '{
+            "query": {
+                "search": "",
+                "page": 1,
+                "page-size": 1000,
+                "order-by": 1,
+                "order": "ASC",
+                "client-id": 0
+            }
+        }';
+        $response = Http::withHeaders($headers)->withBody($body,'application/json')->post($url)->json();
+        return response()->json($response);
     }
     /**
      * Show the form for creating a new resource.

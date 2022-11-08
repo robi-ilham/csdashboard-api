@@ -11,4 +11,9 @@ class TokenMapGroup extends Model
 
     protected $connection = 'jnsbroadcast';
     protected $table = 'token_map_groups';
+
+    // protected $with=['tokenmap'];
+    // public function tokenmap(){
+    //     return $this->hasOne(JnsTokenMap::class,'id','token_map_id');
+    // }
 }

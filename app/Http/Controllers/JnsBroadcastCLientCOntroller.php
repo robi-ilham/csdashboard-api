@@ -21,7 +21,7 @@ class JnsBroadcastCLientController extends Controller
             $clients= JnsBroadcastClient::get();
         }else{
             if(!empty($request->name)){
-                $filter = ['name','=',$request->name];
+                $filter = ['name','LIKE','%'.$request->name.'%'];
                 array_push($search,$filter);
             }
           

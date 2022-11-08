@@ -21,7 +21,7 @@ class CstoolAuditController extends Controller
         }else{
          
             if(!empty($request->appname)){
-                $filter = ['appname','=',$request->shortcode];
+                $filter = ['appname','=',$request->appname];
                 array_push($search,$filter);
             }
             if(!empty($request->type)){

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CstoolAudit;
 use App\Models\JnsBroadcastClient;
 use App\Models\JnsBroadcastDivision;
 use App\Models\M2mUser;
@@ -136,6 +137,7 @@ class M2mUserController extends Controller
             'unbillable_access'=>$request->unbillable_access
 
         ]);
+        $this->storeAudit('CREATE',$request);
 
         return response()->json($data,200);
     }
@@ -195,6 +197,7 @@ class M2mUserController extends Controller
             'expiry'=>$request->expiry,
             'unbillable_access'=>$request->unbillable_access
         ]);
+        $this->storeAudit('UPDATE',$request);
         return response()->json($division,200);
     }
 
@@ -208,6 +211,7 @@ class M2mUserController extends Controller
     {
         $division=M2mUser::find($id);
         $division->delete();
+        $this->storeAudit('DELETE',$division);
         return response()->json(['message'=>'deleted'],200);
     }
     private function getAccessMode($types){
@@ -216,5 +220,15 @@ class M2mUserController extends Controller
             $total=$total+$val;
         }
         return $total;
+    }
+    private function storeAudit($type,$json){
+        $user=auth()->user();
+        $audit=new CstoolAudit();
+        $audit->appname='M2M';
+        $audit->type=$type;
+        $audit->json=$json;
+        $audit->created_by=$user->id;
+        $audit->save();
+
     }
 }

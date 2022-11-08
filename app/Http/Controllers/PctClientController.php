@@ -2,52 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsDeliveryReport;
+use App\Models\PctClient;
 use Illuminate\Http\Request;
 
-class JnsDeliveryReportController extends Controller
+class PctClientController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request) 
     {
-        $data = JnsDeliveryReport::paginate(20);
-
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsDeliveryReport::get();
-        }else{
-            if(!empty($request->drpush_category_id)){
-                $filter = ['drpush_category_id','=',$request->drpush_category_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->type)){
-                $filter = ['division_id','=',$request->type];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsDeliveryReport::where($search)->get();
+        $client=PctClient::select('*');
+        if(!empty($request->name)){
+            $client->where('szClient','like','%'.$request->name.'%');
         }
-        return response()->json($word,200);
-        
+        return $client->paginate(10);
     }
+    public function indexAll(Request $request) 
+    {
+        
+        return PctClient::all();
+    }
+
     /**
      * Show the form for creating a new resource.
      *

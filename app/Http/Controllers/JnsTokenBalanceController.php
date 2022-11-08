@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JnsTokenBalance;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\Request;
 
 class JnsTokenBalanceController extends Controller
@@ -24,20 +25,27 @@ class JnsTokenBalanceController extends Controller
         $search=[];
         if(empty($request)){
            // echo 'ok';
-            $word= JnsTokenBalance::get();
+            $data= JnsTokenBalance::get();
         }else{
-            if(!empty($request->msisdn)){
-                $filter = ['msisdn','like','%'.$request->msisdn.'%'];
-                array_push($search,$filter);
-            }
+            $data=JnsTokenBalance::with('mapgroup');
+            // if(!empty($request->msisdn)){
+            //     $filter = ['msisdn','like','%'.$request->msisdn.'%'];
+            //     array_push($search,$filter);
+            // }
             if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
+               $data=$data->whereHas('mapgroup.tokenmap',function(EloquentBuilder $query) use ($request){
+                $query->where('client_id','=',$request->client_id);
+               });
             }
+            if(!empty($request->division_id)){
+                $data=$data->whereHas('mapgroup.tokenmap',function(EloquentBuilder $query) use ($request){
+                    $query->where('division_id','=',$request->division_id);
+                   });
+             }
           //  return $search;
-            $word = JnsTokenBalance::where($search)->get();
+            $data = $data->get();
         }
-        return response()->json($word,200);
+        return response()->json($data,200);
         
     }
     /**

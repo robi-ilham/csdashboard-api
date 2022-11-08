@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CstoolAudit;
 use App\Models\JnsWebUser;
 use Illuminate\Http\Request;
 
@@ -91,7 +92,7 @@ class JnsWebUserController extends Controller
             'division_id' => $request->division_id,
             'use_sha256' => 0
         ]);
-
+        $this->storeAudit('CREATE',$request);
         return response()->json($user);
     }
     public function show($id)
@@ -119,7 +120,7 @@ class JnsWebUserController extends Controller
             // 'division_id' => $request->division_id,
             'use_sha256' => 0
         ]);
-
+        $this->storeAudit('UPDATE',$request);
         return response()->json($user);
     }
 
@@ -127,6 +128,7 @@ class JnsWebUserController extends Controller
     {
         $user = JnsWebUser::findOrFail($user);
         $user->delete();
+        $this->storeAudit('DELETE',$user);
         return response()->json(['message' => 'data successfully deleted', 200]);
     }
     public function resetPassword(Request $request)
@@ -145,9 +147,21 @@ class JnsWebUserController extends Controller
         }else{
             return response()->json(['message'=>'user not found'],200);
         }
+        $this->storeAudit('RESET PASSWORD',$request);
     }
     private function encryptPassword($password)
     {
         return sha1($password);
+    }
+
+    private function storeAudit($type,$json){
+        $user=auth()->user();
+        $audit=new CstoolAudit();
+        $audit->appname='JNS';
+        $audit->type=$type;
+        $audit->json=$json;
+        $audit->created_by=$user->id;
+        $audit->save();
+
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CstoolAudit;
 use App\Models\SmppUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -96,7 +97,7 @@ class SmppUserController extends Controller
 
 
         ]);
-
+        $this->storeAudit('CREATE',$request);
         return response()->json($data,200);
     }
 
@@ -146,7 +147,7 @@ class SmppUserController extends Controller
 
 
         ]);
-        
+        $this->storeAudit('UPDATE',$request);
         return response()->json($data,200);
     }
 
@@ -160,6 +161,18 @@ class SmppUserController extends Controller
     {
         $data=SmppUser::where('client_id',$id);
         $data->delete();
+        $this->storeAudit('DELETE',$data);
         return response()->json(['message'=>'deleted'],200);
+        
+    }
+    private function storeAudit($type,$json){
+        $user=auth()->user();
+        $audit=new CstoolAudit();
+        $audit->appname='SMPP';
+        $audit->type=$type;
+        $audit->json=$json;
+        $audit->created_by=$user->id;
+        $audit->save();
+
     }
 }

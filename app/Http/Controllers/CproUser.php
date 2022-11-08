@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CstoolAudit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -18,12 +19,13 @@ class CproUser extends Controller
     }
 
     public function index(Request $request){
+        //return $request;
         $page=isset($request->page)?$request->page:1;
         $client_id=isset($request->client_id)?$request->client_id:0;
         $division_id=isset($request->division_id)?$request->division_id:0;
         $username=$request->username;
-        $sender=$request->sender;
-        $group_id=isset($request->group_id)?$request->group_id:0;
+        $sender=$request->sender_id;
+        $group_id=isset($request->privilege_id)?$request->privilege_id:0;
 
 
         $token = $this->auth();
@@ -66,18 +68,19 @@ class CproUser extends Controller
             ];
             return  response()->json($response,403);
         }
-        $url = $url=env('CPRO_HOST').'/api/create-account';
+        $url = $url=env('CPRO_HOST').'/api/user-create-account';
         $headers = ['Authorization'=>$token];
         $params = [
             'username'=>$request->username,
             'password'=>$request->password,
             'client-id'=>$request->client_id,
-            'division-id'=>$request->divison_id,
-            'fullname'=>$request->fullname,
+            'division-id'=>$request->division_id,
+            'full-name'=>$request->name,
             'privilege-id'=>$request->privilege_id,
             'sender-id'=>$request->sender_id
         ];
-        $response = Http::withHeaders($headers)->post($url,$params)->json();
+        $this->storeAudit("CREATE",json_encode($params));
+        $response = Http::asForm()->withHeaders($headers)->post($url,$params)->json();
         
         return response()->json($response);
     }
@@ -98,6 +101,7 @@ class CproUser extends Controller
             'newpassword'=>$request->newpassword,
             
         ];
+        $this->storeAudit("RESET PASSWORD",json_encode($params));
         $response = Http::withHeaders($headers)->post($url,$params)->json();
     }
 
@@ -118,9 +122,22 @@ class CproUser extends Controller
             'username'=>$username,
 
         ];
-        return $params;
+        $this->storeAudit("DELETE",json_encode($params));
         $response = Http::withHeaders($headers)->post($url,$params)->json();
+
+
         
         return response()->json($response);
+    }
+
+    private function storeAudit($type,$json){
+        $user=auth()->user();
+        $audit=new CstoolAudit();
+        $audit->appname='CPRO';
+        $audit->type=$type;
+        $audit->json=$json;
+        $audit->created_by=$user->id;
+        $audit->save();
+
     }
 }

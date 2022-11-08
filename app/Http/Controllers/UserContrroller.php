@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CstoolAudit;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserContrroller extends Controller
 {
@@ -14,10 +16,30 @@ class UserContrroller extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(20);
-        return response()->json($users);
+        $search = [];
+        if (empty($request)) {
+            // echo 'ok';
+            $users = user::get();
+        } else {
+            
+            if (!empty($request->email)) {
+                $filter = ['email', 'like', "%".$request->email."%"];
+                array_push($search, $filter);
+            }
+            if (!empty($request->name)) {
+                $filter = ['name', 'like', '%'.$request->name.'%'];
+                array_push($search, $filter);
+            }
+            if (!empty($request->status)) {
+                $filter = ['status', '=', $request->status];
+                array_push($search, $filter);
+            }
+            
+            $users = User::where($search)->get();
+        }
+        return response()->json($users, 200);
     }
 
     /**
@@ -59,6 +81,7 @@ class UserContrroller extends Controller
             'password'=>Hash::make($request->password)
 
         ]);
+        $this->storeAudit('CREATE',$request);
 
         $response=[
                 'user'=>$user
@@ -75,7 +98,7 @@ class UserContrroller extends Controller
      */
     public function show(User $user)
     {
-        $user = User::find($user);
+        $user = User::find($user->id);
         return response()->json($user,200);
     }
 
@@ -100,16 +123,14 @@ class UserContrroller extends Controller
     public function update(Request $request,  $user)
     {
         $request->validate([
-            'name'=>'required|min:4',
-            'email'=>'required|email'
+            'status'=>'required'
         ]);
 
 
         $user=User::findOrFail($user)->update([
-            'name'=>$request->name,
-            'email'=>$request->email,
             'status'=>$request->status
         ]);
+        $this->storeAudit('UPDATE',$request);
 
         $response=[
                 'user'=>$user
@@ -120,6 +141,7 @@ class UserContrroller extends Controller
 
     public function resetPassword(Request $request)
     {
+        
         $request->validate([
             'old_password' => 'required|min:8',
             Password::min(8)
@@ -129,17 +151,21 @@ class UserContrroller extends Controller
                     ->symbols()
                     ->uncompromised(),
         ]);
-        $user = User::where([
-            ['id', '=', $request->id],
-            ['password', '=', Hash::make($request->old_password)]
-        ])->first();
-       print_r($user);
-        if ($user) {
-            $user->update(['password' => bcrypt($request->password)]);
-            return response()->json($user);
+        $user=User::find($request->id);
+        if($user){
+            if(Hash::check($request->password,$user->password)){
+                $user->update(['password' => Hash::make($request->password)]);
+                $this->storeAudit('RESET PASSWORD',$request);
+                return response()->json($user,200);
+            }else{
+                $error = ValidationException::withMessages(['message'=>'user not found']);
+                throw $error;
+            }
         }else{
-            return response()->json(['message'=>'user not found'],404);
+            return response(['message'=>'user not found'],404);
         }
+
+       
     }
 
     /**
@@ -151,8 +177,18 @@ class UserContrroller extends Controller
     public function destroy( $user)
     {
         $user=User::findOrFail($user)->delete();
+        $this->storeAudit('DELETE',$user);
         return response()->json(['message'=>'deleted'],200);
     }
 
-    
+    private function storeAudit($type,$json){
+        $user=auth()->user();
+        $audit=new CstoolAudit();
+        $audit->appname='CSTOOLS';
+        $audit->type=$type;
+        $audit->json=$json;
+        $audit->created_by=$user->id;
+        $audit->save();
+
+    }
 }

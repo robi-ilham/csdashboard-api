@@ -27,18 +27,21 @@ class ReportCpro extends Controller
             ];
             return  response()->json($response,401);
         }
-        $url = $url=env('CPRO_HOST').'/api/report-broadcast-list';
+        $url=env('CPRO_HOST').'/api/report-broadcast-list';
         $headers = ['Authorization'=>$token];
+        $client_id = (isset($request->client_id))?$request->client_id:0;
+        $page=isset($request->page)?$request->page:1;
+        $division_id = (isset($request->division_id))?$request->division_id:0;
         $body = '{
             "query": {
                 "search": {
-                    "client-id": '.$request->client_id.',
-                    "division-id": '.$request->division_id.',
+                    "client-id": '.$client_id.',
+                    "division-id": '.$division_id.',
                     "status": 0,
                     "start-date": "",
                     "end-date": ""
                 },
-                "page": 1,
+                "page": '.$page.',
                 "page-size": 10,
                 "order-by": 2,
                 "order": "DESC"

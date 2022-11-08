@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsDeliveryReport;
+use App\Models\BroadcastDrpushCategory;
 use Illuminate\Http\Request;
 
-class JnsDeliveryReportController extends Controller
+class DrCategory extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,40 +14,10 @@ class JnsDeliveryReportController extends Controller
      */
     public function index()
     {
-        $data = JnsDeliveryReport::paginate(20);
+        $data = BroadcastDrpushCategory::get();
+        return response()->json($data,200);
+    }
 
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsDeliveryReport::get();
-        }else{
-            if(!empty($request->drpush_category_id)){
-                $filter = ['drpush_category_id','=',$request->drpush_category_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->type)){
-                $filter = ['division_id','=',$request->type];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsDeliveryReport::where($search)->get();
-        }
-        return response()->json($word,200);
-        
-    }
     /**
      * Show the form for creating a new resource.
      *

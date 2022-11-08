@@ -17,4 +17,10 @@ class JnsTokenBalance extends Model
     
 
     protected $guarded=[];
+
+    protected $with=['mapgroup'];
+
+    public function mapgroup(){
+        return $this->hasOne(TokenMapGroup::class,'account_no','account_number');
+    }
 }
