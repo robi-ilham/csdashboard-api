@@ -7,6 +7,7 @@ use App\Models\JnsBroadcastDivision;
 use App\Models\JnsMasking;
 use App\Models\SmsPushReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class SmsPushReportController extends Controller
 {
@@ -110,6 +111,8 @@ class SmsPushReportController extends Controller
         $update = SmsPushReport::find($create->id);
         $update->request_spec = $spec;
         $update->save();
+
+        Http::withBody($spec)->post(env('SMS_PUSH_REPORT_URL'));
 
         return $update;
     }

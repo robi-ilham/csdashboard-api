@@ -7,6 +7,7 @@ use App\Models\JnsBroadcastDivision;
 use App\Models\JnsMasking;
 use App\Models\WAPushReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class WaPushReportController extends Controller
 {
@@ -109,6 +110,7 @@ class WaPushReportController extends Controller
         $update = WAPushReport::find($create->id);
         $update->request_spec = $spec;
         $update->save();
+        Http::withBody($spec)->post(env('SMS_PUSH_REPORT_URL'));
 
         return $update;
     }
