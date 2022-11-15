@@ -2,11 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsDeliveryReport;
+use App\Service\CproService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
-class JnsDeliveryReportController extends Controller
+class CproDownloadReport extends Controller
 {
+    public function summary(Request $request)
+    {
+        $token = CproService::getToken();
+
+        if(!$token){
+            $response=[
+                'status'=>0,
+                'message'=>'login cpro failed'
+            ];
+            return  response()->json($response,401);
+        }
+        $request_id = $request->request_id;
+        $payload = '
+			{
+				"request-id":"' . $request_id . '",
+				"type":"summary"
+			}
+
+        ';
+        $response = Http::withHeaders(['Authorization' => $token])->withBody($payload, 'application/json')->post(env('CPRO_REPORT_URL'));
+
+        return $response;
+    }
+
+    public function detail(Request $request)
+    {
+        $token = CproService::getToken();
+
+        if(!$token){
+            $response=[
+                'status'=>0,
+                'message'=>'login cpro failed'
+            ];
+            return  response()->json($response,401);
+        }
+
+        $request_id = $request->request_id;
+        $payload = '
+			{
+				"request-id":"' . $request_id . '",
+				"type":"detail"
+			}
+
+        ';
+       // return env('CPRO_REPORT_URL');
+        $response = Http::withHeaders(['Authorization' => $token])->withBody($payload, 'application/json')->post(env('CPRO_REPORT_URL'));
+
+        return $response;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -14,45 +64,9 @@ class JnsDeliveryReportController extends Controller
      */
     public function index()
     {
-        $data = JnsDeliveryReport::paginate(20);
+        //
+    }
 
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsDeliveryReport::paginate(10);
-        }else{
-            if(!empty($request->drpush_category_id)){
-                $filter = ['drpush_category_id','=',$request->drpush_category_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->type)){
-                $filter = ['division_id','=',$request->type];
-                array_push($search,$filter);
-            }
-            if(!empty($request->provider_id)){
-                $filter=['provider_id','=',$request->provider_id];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsDeliveryReport::where($search)->paginate(10);
-           
-        }
-        return response()->json($word,200);
-        
-    }
     /**
      * Show the form for creating a new resource.
      *

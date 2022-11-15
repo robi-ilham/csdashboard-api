@@ -11,11 +11,36 @@ use App\Models\PctSyncClientMappingWa;
 use App\Models\PctSyncMappingClient;
 use App\Models\PctSyncMappingDivision;
 use App\Models\PctSynMappingDivisionWa;
+use Illuminate\Http\Client\HttpClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class PctDivisionController extends Controller
 {
+    public function testJnsApi(){
+
+        $payload= [
+            'clientid' => 550,
+            'divisionname' => 'testingbyrobi2',
+            'tokentype' => 'prepaidbyclient',
+            'batype' => 'prepaidbyclient'
+        ];
+        
+            
+            $create = Http::get('http://sit2.jatismobile.com/api/AddDivision',$payload);
+            return $create;
+    }
+    public function testWaApi(){
+
+        $payload = '{
+            "id":550,
+            "name":"1",
+            "clientId":1
+        }';
+
+        $response = Http::withBody($payload, 'application/json')->post(env('CREATE_DIVISION_WA_URL'))->json();
+        return $response;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -24,14 +49,14 @@ class PctDivisionController extends Controller
     public function index(Request $request)
     {
         //return $request;
-        $data =PctClientDivision::select('*');
-        if(!empty($request->client_id)){
-            $data->where('iCLientId',$request->client_id);
+        $data = PctClientDivision::select('*');
+        if (!empty($request->client_id)) {
+            $data->where('iCLientId', $request->client_id);
         }
-        if(!empty($request->division_name)){
-            $data->where('szDivision','like','%'.$request->division_name.'%');
+        if (!empty($request->division_name)) {
+            $data->where('szDivision', 'like', '%' . $request->division_name . '%');
         }
-        
+
         $data = $data->paginate(10);
         return response()->json($data, 200);
     }
@@ -54,13 +79,15 @@ class PctDivisionController extends Controller
      */
     public function store(Request $request)
     {
+        
         $user = auth()->user();
 
         $client_id = $request->client_id;
         $tokenType = $request->token_type;
         $baType = $request->ba_type;
         $iArmId = $request->i_arm_id;
-        $divisionName=$request->division_name;
+        $divisionName = $request->division_name;
+
 
         $division = new PctClientDivision();
         $division->iClientid = $client_id;
@@ -70,44 +97,68 @@ class PctDivisionController extends Controller
         $division->save();
         $division_id = $division->iId;
 
+
         $syncMappingDivision = new PctSyncMappingDivision();
         $syncMappingDivision->iDivisionId = $division_id;
-        $tokenText=[
-            0=>'postpaid',
-            1=>'prepaidbyclient',
-            2=>'prepaidbydivision'
+        $tokenText = [
+            0 => 'postpaid',
+            1 => 'prepaidbyclient',
+            2 => 'prepaidbydivision'
         ];
 
         if ($request->broadcast) {
-
+            $trace['broadcast check'] = true;
 
             $syncMappingClient = PctSyncMappingClient::where('iClientId', $client_id)->first();
-            if ($syncMappingClient->iClientJNS6Id != null) {
-                //hit api create jns
-                $create=Http::get(env('CREATE_DIVISION_JNS_URL'), [
-                    'clientid' => $client_id,
-                    'divisionname' => $divisionName,
-                    'tokentype'=>$tokenText[$tokenType],
-                    'batype'=>$tokenText[$baType]
-                ]);
-               // print_r($create);
-                $syncMappingDivision->iDivisionJNS6Id = $division_id;
+            if ($syncMappingClient) {
+               
+                if ($syncMappingClient->iClientJNS6Id != null) {
+                    //hit api create jns
+                    $trace['createJNSDiv'] = "start";
+                    $payload= [
+                        'clientid' => $client_id,
+                        'divisionname' => $divisionName,
+                        'tokentype' => $tokenText[$tokenType],
+                        'batype' => $tokenText[$baType]
+                    ];
+                    print_r($payload);
+                    
+                        
+                        $create = Http::connectTimeout(10)->get(env('CREATE_DIVISION_JNS_URL'),$payload);
+                        print_r($create->body());
+
+       
+                    
+
+
+                    // print_r($create);
+                    $syncMappingDivision->iDivisionJNS6Id = $division_id;
+                } else {
+                }
             }
 
 
             if ($tokenType == 1) {
+                $trace['token_type'] = [
+                    'token_is_1' => true
+                ];
                 $clientConfig = PctClientConfig::where('iClientId', $client_id)->first();
+                if (!$clientConfig) {
+                    $trace['clientconfig'] = false;
+                } else {
+                    $trace['clientconfig'] = true;
+                    $clientConfigPrepaid = PctClientConfigPrepaid::where('iId', $clientConfig->iId)->first();
 
-                $clientConfigPrepaid = PctClientConfigPrepaid::where('iId', $clientConfig->iId)->first();
-
-                if ($clientConfigPrepaid) {
-                    $configPrepaid = new PctClientConfigPrepaid();
-                    $configPrepaid->itemNumber = $clientConfigPrepaid->itemNumber + 1;
-                    $configPrepaid->iDivisionId = $division_id;
-                    $configPrepaid->save();
+                    if ($clientConfigPrepaid) {
+                        $trace['clientConfigPrepaid'] = true;
+                        $configPrepaid = new PctClientConfigPrepaid();
+                        $configPrepaid->itemNumber = $clientConfigPrepaid->itemNumber + 1;
+                        $configPrepaid->iDivisionId = $division_id;
+                        $configPrepaid->save();
+                    }
                 }
-            }
-        }
+            } 
+        } 
 
 
         $syncMappingDivision->save();
@@ -120,6 +171,7 @@ class PctDivisionController extends Controller
 
         if ($request->wa) {
             $jtsSyncMappingClientWa = PctSyncClientMappingWa::where('iClientId', $client_id)->first();
+            if($jtsSyncMappingClientWa){
             $client_id_jns = $jtsSyncMappingClientWa->iClientJNS6Id;
             $payload = '{
                 "id":' . $client_id . ',
@@ -128,6 +180,9 @@ class PctDivisionController extends Controller
             }';
 
             $response = Http::withBody($payload, 'application/json')->post(env('CREATE_DIVISION_WA_URL'))->json();
+            print_r($response);
+            
+        }
         }
 
         $clientMasking = PctCliClientMasking::where('iClientId', $client_id)->first();
@@ -141,16 +196,17 @@ class PctDivisionController extends Controller
         $iTotal = $total->count();
         if ($iTotal > 0 && $request->broadcast) {
 
-            $jtsCliHistoryArmClient = new PctCliHistoryArmClient();
-            $jtsCliHistoryArmClient->dtmDateEffectiveStart = date('Y-m-d');
-            $jtsCliHistoryArmClient->iArmId = $iArmId;
-            $jtsCliHistoryArmClient->iProductId = 1;
-            $jtsCliHistoryArmClient->iClientId = $client_id;
-            $jtsCliHistoryArmClient->iDivisionId = $division_id;
-            $jtsCliHistoryArmClient->iOtherId = $clientMasking->iMaskingId;
-            $jtsCliHistoryArmClient->szInsertedBy=$user->name;
-            $jtsCliHistoryArmClient->save();
+            // $jtsCliHistoryArmClient = new PctCliHistoryArmClient();
+            // $jtsCliHistoryArmClient->dtmDateEffectiveStart = date('Y-m-d');
+            // $jtsCliHistoryArmClient->iArmId = $iArmId;
+            // $jtsCliHistoryArmClient->iProductId = 1;
+            // $jtsCliHistoryArmClient->iClientId = $client_id;
+            // $jtsCliHistoryArmClient->iDivisionId = $division_id;
+            // $jtsCliHistoryArmClient->iOtherId = $clientMasking->iMaskingId;
+            // $jtsCliHistoryArmClient->szInsertedBy = $user->name;
+            //$jtsCliHistoryArmClient->save();
         }
+        return true;
     }
 
     /**
@@ -185,60 +241,57 @@ class PctDivisionController extends Controller
     public function update(Request $request, $id)
     {
         $user = auth()->user();
-        $division_id=$request->division_id;
+        $division_id = $request->division_id;
         $client_id = $request->client_id;
         $tokenType = $request->token_type;
         $baType = $request->ba_type;
         $iArmId = $request->i_arm_id;
-        $divisionName=$request->division_name;
-        $tokenText=[
-            0=>'postpaid',
-            1=>'prepaidbyclient',
-            2=>'prepaidbydivision'
+        $divisionName = $request->division_name;
+        $tokenText = [
+            0 => 'postpaid',
+            1 => 'prepaidbyclient',
+            2 => 'prepaidbydivision'
         ];
 
         //update division;
-        $division=PctClientDivision::find($division_id);
+        $division = PctClientDivision::find($division_id);
         $division->iClientid = $client_id;
         $division->szDivision = $divisionName;
         $division->szUpdatedBy = $user->name;
         $division->bActive = 1;
         $division->save();
 
-        $jtsSyncMappingClientWa=PctSyncClientMappingWa::where('iClientId',$client_id)->first();
-        $jtsSyncMappingDivisionWA=PctSynMappingDivisionWa::where('iDivisionId',$division_id)->first();
+        $jtsSyncMappingClientWa = PctSyncClientMappingWa::where('iClientId', $client_id)->first();
+        $jtsSyncMappingDivisionWA = PctSynMappingDivisionWa::where('iDivisionId', $division_id)->first();
 
-        $iClientIdJns=$jtsSyncMappingClientWa->iCLientJNS6Id;
+        $iClientIdJns = $jtsSyncMappingClientWa->iCLientJNS6Id;
         $iDivisionIdJns = $jtsSyncMappingDivisionWA->iDivisionJns6Id;
 
-        if($request->wa && $jtsSyncMappingClientWa && $jtsSyncMappingDivisionWA){
-            
-            if(empty($iDivisionIdJns)){
+        if ($request->wa && $jtsSyncMappingClientWa && $jtsSyncMappingDivisionWA) {
+
+            if (empty($iDivisionIdJns)) {
                 $payload = '{
                     "id":' . $client_id . ',
                     "name":"' . $division->szDivision . '",
                     "clientId":' . $iClientIdJns . '
                 }';
-    
+
                 $response = Http::withBody($payload, 'application/json')->post(env('CREATE_DIVISION_WA_URL'))->json();
-    
+
                 $SyncMappingDivisionWA = new PctSynMappingDivisionWa();
                 $SyncMappingDivisionWA->iDivisionId = $division->iId;
                 $SyncMappingDivisionWA->iDivisionJNS6Id = $division->iId;
                 $SyncMappingDivisionWA->save();
-            }else{
+            } else {
                 $payload = '{
                     "id":' . $client_id . ',
                     "name":"' . $division->szDivision . '",
                     "clientId":' . $iClientIdJns . '
                 }';
-    
+
                 $response = Http::withBody($payload, 'application/json')->post(env('UPDATE_DIVISION_WA_URL'))->json();
             }
-            
-
-
-        }else{
+        } else {
             $payload = '{
                 "id":' . $client_id . ',
                 "name":"' . $division->szDivision . '",
@@ -253,52 +306,45 @@ class PctDivisionController extends Controller
             $SyncMappingDivisionWA->save();
         }
 
-        $jtsSyncMappingClient=PctSyncMappingClient::where('iClientId',$client_id);
-        $jtsSyncMappingDivision=PctSyncMappingDivision::where('iDivisionId',$division_id);
+        $jtsSyncMappingClient = PctSyncMappingClient::where('iClientId', $client_id);
+        $jtsSyncMappingDivision = PctSyncMappingDivision::where('iDivisionId', $division_id);
 
-        $iclientid=$jtsSyncMappingClient->iClientId;
-        $iDivisionId=$jtsSyncMappingDivision->iDivisionId;
+        $iclientid = $jtsSyncMappingClient->iClientId;
+        $iDivisionId = $jtsSyncMappingDivision->iDivisionId;
 
-        if($request->broadcast && $jtsSyncMappingClient && $jtsSyncMappingDivision){
-            $update=Http::get(env('UPDATE_DIVISION_JNS_URL'), [
+        if ($request->broadcast && $jtsSyncMappingClient && $jtsSyncMappingDivision) {
+            $update = Http::get(env('UPDATE_DIVISION_JNS_URL'), [
                 'clientid' => $client_id,
                 'newdivisionname' => $divisionName,
-                'divisionid'=>$division_id
-                
-            ]);
+                'divisionid' => $division_id
 
-        }else{
-            $iClientIdJns=$jtsSyncMappingClient->iClientJNS6Id;
-            if(!empty($iClientIdJns)){
-                $create=Http::get(env('CREATE_DIVISION_JNS_URL'), [
+            ]);
+        } else {
+            $iClientIdJns = $jtsSyncMappingClient->iClientJNS6Id;
+            if (!empty($iClientIdJns)) {
+                $create = Http::get(env('CREATE_DIVISION_JNS_URL'), [
                     'clientid' => $client_id,
                     'divisionname' => $divisionName,
-                    'tokentype'=>$tokenText[$tokenType],
-                    'batype'=>$tokenText[$baType]
+                    'tokentype' => $tokenText[$tokenType],
+                    'batype' => $tokenText[$baType]
                 ]);
             }
             $syncMappingDivision = new PctSyncMappingDivision();
             $syncMappingDivision->iDivisionId = $division_id;
-            $syncMappingDivision->iDivisionJNS6Id=$division_id;
+            $syncMappingDivision->iDivisionJNS6Id = $division_id;
             $syncMappingDivision->save();
-            if($tokenType==1){
-                $jtsCLiClientConfig=PctClientConfig::where('iClientId',$client_id)->first();
-                $iConfigId=$jtsCLiClientConfig->iId;
-                $jtsCliClientConfigPrepaidDivision=PctClientConfigPrepaid::where('iId',$iConfigId);
-                if(!empty($jtsCliClientConfigPrepaidDivision->iId)){
+            if ($tokenType == 1) {
+                $jtsCLiClientConfig = PctClientConfig::where('iClientId', $client_id)->first();
+                $iConfigId = $jtsCLiClientConfig->iId;
+                $jtsCliClientConfigPrepaidDivision = PctClientConfigPrepaid::where('iId', $iConfigId);
+                if (!empty($jtsCliClientConfigPrepaidDivision->iId)) {
                     $configPrepaid = new PctClientConfigPrepaid();
                     $configPrepaid->itemNumber = $jtsCliClientConfigPrepaidDivision->itemNumber + 1;
                     $configPrepaid->iDivisionId = $division_id;
                     $configPrepaid->save();
                 }
             }
-
         }
-
-
-
-
-
     }
 
     /**

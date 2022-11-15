@@ -28,10 +28,7 @@ class JnsTokenBalanceController extends Controller
             $data= JnsTokenBalance::get();
         }else{
             $data=JnsTokenBalance::with('mapgroup');
-            // if(!empty($request->msisdn)){
-            //     $filter = ['msisdn','like','%'.$request->msisdn.'%'];
-            //     array_push($search,$filter);
-            // }
+         
             if(!empty($request->client_id)){
                $data=$data->whereHas('mapgroup.tokenmap',function(EloquentBuilder $query) use ($request){
                 $query->where('client_id','=',$request->client_id);

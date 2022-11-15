@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class PctSynMappingDivisionWa extends Model
 {
     use HasFactory;
+    protected $connection = 'sqlsrv';
+    protected $table = 'JTS_SYNC_MappingDivisionWA';
+
+    public $timestamps = false;
+
+
+
+    protected $guarded=[];
 }

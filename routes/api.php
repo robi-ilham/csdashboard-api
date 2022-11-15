@@ -8,11 +8,13 @@ use App\Http\Controllers\CproButtonController;
 use App\Http\Controllers\CproChatbotController;
 use App\Http\Controllers\CproClient;
 use App\Http\Controllers\CproDivisionController;
+use App\Http\Controllers\CproDownloadReport;
 use App\Http\Controllers\CproHelpdeskController;
 use App\Http\Controllers\CproSender;
 use App\Http\Controllers\CproTemplate;
 use App\Http\Controllers\CproUser;
 use App\Http\Controllers\CstoolAuditController;
+use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\DrCategory;
 use App\Http\Controllers\InformationController;
 use App\Http\Controllers\JnsAuditTrailController;
@@ -66,6 +68,9 @@ Route::post('/login',[AuthController::class,'login']);
 Route::resource('alert', AlertController::class);
 
 Route::prefix('/cpro')->group(function () { 
+    Route::post('download/summary',[CproDownloadReport::class,'summary'])->name('download.summary');
+    Route::post('download/detail',[CproDownloadReport::class,'detail'])->name('download.detail');
+    
     Route::post('user/reset-password',[CproUser::class,'resetPassword'])->name('user.resetpassword');
     Route::resource('user', CproUser::class);
     Route::get('division/index-api',[CproDivisionController::class,'indexApi'])->name('division.indexapi');
@@ -77,6 +82,7 @@ Route::prefix('/cpro')->group(function () {
     Route::resource('button', CproButtonController::class);
     Route::resource('chatbot', CproChatbotController::class);
     Route::resource('helpdesk', CproHelpdeskController::class);
+    Route::get('template/list',[CproTemplate::class,'list'])->name('template.list');
     Route::resource('template', CproTemplate::class);
 });
 
@@ -161,6 +167,8 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
     });
     //PCT
     Route::prefix('/pct')->group(function () {
+        Route::get('division/test/createjns',[PctDivisionController::class,'testJnsApi'])->name('division.test.createjns');
+        Route::get('division/test/createwa',[PctDivisionController::class,'testWaApi'])->name('division.test.createwa');
         Route::resource('division', PctDivisionController::class);
         Route::get('client/all',[PctClientController::class,'indexAll'])->name('client.all');
         Route::resource('client', PctClientController::class);
@@ -175,6 +183,9 @@ Route::group(['middleware'=>'auth:sanctum'],function(){
        // Route::get('/wa-push',[WaPushReportController::class,'index']);
         Route::resource('wa-push', WaPushReportController::class);
         Route::resource('sms-push', SmsPushReportController::class);
+        Route::post('/request/download',[DownloadController::class,'requestReport']);
+        
+
         //Route::get('/sms-push',[SmsPushReportController::class,'index']);
     });
 

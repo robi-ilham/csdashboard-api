@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Service\CproService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use PDO;
 
 class CproBroadcastController extends Controller
 {
@@ -48,6 +49,7 @@ class CproBroadcastController extends Controller
         $headers = ['Authorization'=>$token];
         
         $response = Http::withHeaders($headers)->withBody($param,'application/json')->post($url)->json();
+        return $response;
     }
 
     /**
@@ -107,6 +109,8 @@ class CproBroadcastController extends Controller
         $response = Http::withHeaders($headers)->withBody($params,'application/json')->post($url)->json();
         return response()->json($response);
     }
+
+    
 
     /**
      * Display the specified resource.

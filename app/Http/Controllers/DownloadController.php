@@ -2,11 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JnsDeliveryReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
-class JnsDeliveryReportController extends Controller
+class DownloadController extends Controller
 {
+
+    public function requestReport(Request $request){
+        $path=$request->path;
+        $token = base64_encode(env('REPORTUSER').":".env("REPORTPASSWORD"));
+        $header=['Authorization'=>"Basic $token"];
+        $body=' {"path":"'.$path.'"}';
+       // echo $body;
+        $response=Http::withHeaders($header)->withBody($body,'application/json')->post(env('JNS_DOWNLOAD_REPORT'));
+        //return $response;
+        if($response->ok()){
+            return $response;
+        } else{
+            abort(404,'file not found');
+        }
+
+    }
     /**
      * Display a listing of the resource.
      *
@@ -14,45 +30,9 @@ class JnsDeliveryReportController extends Controller
      */
     public function index()
     {
-        $data = JnsDeliveryReport::paginate(20);
+        //
+    }
 
-        return response()->json($data);
-    }
-    public function indexAjax(Request $request)
-    {
-    
-        $search=[];
-        if(empty($request)){
-           // echo 'ok';
-            $word= JnsDeliveryReport::paginate(10);
-        }else{
-            if(!empty($request->drpush_category_id)){
-                $filter = ['drpush_category_id','=',$request->drpush_category_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->client_id)){
-                $filter = ['client_id','=',$request->client_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->division_id)){
-                $filter = ['division_id','=',$request->division_id];
-                array_push($search,$filter);
-            }
-            if(!empty($request->type)){
-                $filter = ['division_id','=',$request->type];
-                array_push($search,$filter);
-            }
-            if(!empty($request->provider_id)){
-                $filter=['provider_id','=',$request->provider_id];
-                array_push($search,$filter);
-            }
-          //  return $search;
-            $word = JnsDeliveryReport::where($search)->paginate(10);
-           
-        }
-        return response()->json($word,200);
-        
-    }
     /**
      * Show the form for creating a new resource.
      *

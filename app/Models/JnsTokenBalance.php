@@ -23,4 +23,5 @@ class JnsTokenBalance extends Model
     public function mapgroup(){
         return $this->hasOne(TokenMapGroup::class,'account_no','account_number');
     }
+    
 }

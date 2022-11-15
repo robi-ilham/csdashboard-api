@@ -12,6 +12,8 @@ class PctSyncMappingDivision extends Model
     protected $connection = 'sqlsrv';
     protected $table = 'JTS_SYNC_MappingDivision';
 
+    public $timestamps = false;
+
 
 
     protected $guarded=[];

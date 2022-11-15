@@ -24,6 +24,10 @@ class JnsBroadcastCLientController extends Controller
                 $filter = ['name','LIKE','%'.$request->name.'%'];
                 array_push($search,$filter);
             }
+            if(!empty($request->q)){
+                $filter = ['name','LIKE','%'.$request->q.'%'];
+                array_push($search,$filter);
+            }
           
             if(!empty($request->active)){
                 $filter = ['active','=',$request->active];

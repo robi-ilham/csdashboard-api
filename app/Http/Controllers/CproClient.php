@@ -24,7 +24,9 @@ class CproClient extends Controller
             ];
             return  response()->json($response,401);
         }
-        $url = $url=env('CPRO_HOST').'/api/user-client-list';
+        
+        $url="https://sitcpro.jatismobile.com".'/api/user-client-list';
+        
         $headers = ['Authorization'=>$token];
         $body = '{
             "query": {

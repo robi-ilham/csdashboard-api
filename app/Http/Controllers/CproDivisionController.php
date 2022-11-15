@@ -57,7 +57,7 @@ class CproDivisionController extends Controller
             ];
             return  response()->json($response,401);
         }
-        $url = $url=env('CPRO_HOST').'/api/user-division-list';
+        $url=env('CPRO_HOST').'/api/user-division-list';
         $headers = ['Authorization'=>$token];
         $body = '{
             "query": {

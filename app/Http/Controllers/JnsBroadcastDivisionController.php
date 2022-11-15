@@ -35,10 +35,29 @@ class JnsBroadcastDivisionController extends Controller
         return response()->json($users, 200);
         
     }
-    public function indexAll()
+    public function indexAll(Request $request)
     {
-        $divisions = JnsBroadcastDivision::all();
-
+        $search = [];
+        if (empty($request)) {
+            // echo 'ok';
+            $divisions = JnsBroadcastDivision::get();
+        } else {
+            
+            if (!empty($request->client_id)) {
+                $filter = ['client_id', '=', $request->client_id];
+                array_push($search, $filter);
+            }
+            if (!empty($request->name)) {
+                $filter = ['name', 'like', '%'.$request->name.'%'];
+                array_push($search, $filter);
+            }
+            if (!empty($request->q)) {
+                $filter = ['name', 'like', '%'.$request->q.'%'];
+                array_push($search, $filter);
+            }
+           
+            $divisions = JnsBroadcastDivision::where($search)->get();
+        }
         return response()->json($divisions);
     }
     /**

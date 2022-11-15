@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CstoolAudit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class CproUser extends Controller
@@ -36,7 +37,7 @@ class CproUser extends Controller
             ];
             return  response()->json($response,401);
         }
-        $url = $url=env('CPRO_HOST').'/api/user-list';
+        $url=env('CPRO_HOST').'/api/user-list';
         $headers = ['Authorization'=>$token];
         $body = '{
             "query": {
@@ -70,6 +71,7 @@ class CproUser extends Controller
         }
         $url = $url=env('CPRO_HOST').'/api/user-create-account';
         $headers = ['Authorization'=>$token];
+        
         $params = [
             'username'=>$request->username,
             'password'=>$request->password,
@@ -79,8 +81,10 @@ class CproUser extends Controller
             'privilege-id'=>$request->privilege_id,
             'sender-id'=>$request->sender_id
         ];
-        $this->storeAudit("CREATE",json_encode($params));
+        //return $params;
         $response = Http::asForm()->withHeaders($headers)->post($url,$params)->json();
+       // $this->storeAudit("CREATE",json_encode($params));
+        
         
         return response()->json($response);
     }
@@ -131,12 +135,13 @@ class CproUser extends Controller
     }
 
     private function storeAudit($type,$json){
-        $user=auth()->user();
+        $user=Auth::user();
+        print_r($user);exit;
         $audit=new CstoolAudit();
         $audit->appname='CPRO';
         $audit->type=$type;
         $audit->json=$json;
-        $audit->created_by=$user->id;
+        $audit->created_by=$user;
         $audit->save();
 
     }

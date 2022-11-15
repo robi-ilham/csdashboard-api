@@ -11,6 +11,7 @@ class PctSyncMappingClient extends Model
 
     protected $connection = 'sqlsrv';
     protected $table = 'JTS_SYNC_MappingClient';
+    public $timestamps = false;
 
 
 
